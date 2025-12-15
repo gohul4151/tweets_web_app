@@ -6,16 +6,18 @@ export default function Signup()
     const inputemail=useRef(null);
     const inputpass=useRef(null);
     const [show,setshow]=useState(false);
-    async function send()
-    {
-        const name=inputuser.current.value;
-        const email=inputemail.current.value;
-        const password=inputpass.current.value;
-        await fetch("http://localhost:3000/signup", {
+    async function send() {
+        const name = inputuser.current.value;
+        const email = inputemail.current.value;
+        const password = inputpass.current.value;
+        const response = await fetch("http://localhost:3000/signup", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name,email,password }),
+            body: JSON.stringify({ name, email, password }),
         });
+        
+        const data = await response.json();
+        alert(data.message);
     }
     return <>
     <br />
@@ -40,7 +42,7 @@ export default function Signup()
         placeholder="your password"
     />
     <br />
-    <button onclick={() => setshow(!show)}>{show ? "Hide" : "Show"}</button>
-    <button onclick={send}>sumbit</button>
+    <button onClick={() => setshow(!show)}>{show ? "Hide" : "Show"}</button>
+    <button onClick={send}>Submit</button>
     </>
 }

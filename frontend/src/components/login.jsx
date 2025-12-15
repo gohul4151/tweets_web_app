@@ -5,19 +5,24 @@ export default function Login()
     const inputemail=useRef(null);
     const inputpass=useRef(null);
     const [show,setshow]=useState(false);
-    async function send()
-    {
-        const email=inputemail.current.value;
-        const password=inputpass.current.value;
-        await fetch("http://localhost:3000/login", {
+    async function send() {
+        const email = inputemail.current.value;
+        const password = inputpass.current.value;
+        const response = await fetch("http://localhost:3000/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email,password }),
+            body: JSON.stringify({ email, password }),
         });
+        
+        const data = await response.json();
+        alert(data.message);
+        if (data.token) {
+            localStorage.setItem('token', data.token);
+        }
     }
     return <>
     <br />
-    username
+    email
     <input 
         ref={inputemail}
         type="text"
@@ -31,7 +36,7 @@ export default function Login()
         placeholder="your password"
     />
     <br />
-    <button onclick={() => setshow(!show)}>{show ? "Hide" : "Show"}</button>
-    <button onclick={send}>sumbit</button>
+    <button onClick={() => setshow(!show)}>{show ? "Hide" : "Show"}</button>
+    <button onClick={send}>sumbit</button>
     </>
 }

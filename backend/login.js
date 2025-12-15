@@ -3,13 +3,14 @@ const bcrypt=require('bcrypt');
 const mongoose=require('mongoose');
 const {userModel}=require('./db');
 const jwt = require('jsonwebtoken');
-import cors from "cors";
-app.use(cors());
+const cors = require("cors");
+
 
 mongoose.connect("mongodb+srv://dharaneesh1881:Dd%409790361881@cluster0.su0jsfi.mongodb.net/tweet");
 const JWT_SECRET="dharaneesh1881";
 const app= express();
 app.use(express.json());
+app.use(cors());
 
 app.post("/signup",async function(req,res){
 
@@ -27,7 +28,9 @@ app.post("/signup",async function(req,res){
         
     });
 
-    res.send("User signed up");
+    res.json({
+        message:"User signed up"
+    });
  
 });
 
