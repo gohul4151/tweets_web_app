@@ -3,6 +3,8 @@ const bcrypt=require('bcrypt');
 const mongoose=require('mongoose');
 const {userModel}=require('./db');
 const jwt = require('jsonwebtoken');
+import cors from "cors";
+app.use(cors());
 
 mongoose.connect("mongodb+srv://dharaneesh1881:Dd%409790361881@cluster0.su0jsfi.mongodb.net/tweet");
 const JWT_SECRET="dharaneesh1881";
