@@ -60,6 +60,19 @@ app.post("/signup",async function(req,res){
 });
 
 app.post("/login", async function(req,res){
+    const requiredbody = z.object({
+    email: z.string().email("Invalid email"),
+    password: z.string().min(6, "Password must be 6 characters")
+    });
+
+    const parsedDatawithSuccess=requiredbody.safeParse(req.body);
+
+    if(!parsedDatawithSuccess.success){
+        res.status(400).json({
+            message:parsedDatawithSuccess.error.issues.map((e)=>e.message).join(", ")
+        });
+        return ;
+    }
 
     const email=req.body.email;
     const password=req.body.password;
