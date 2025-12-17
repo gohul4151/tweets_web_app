@@ -1,23 +1,32 @@
-import { useRef } from "react";
+import { Children, useRef } from "react";
 import { useState } from "react";
-export default function Login()
+import Home from "./home";
+function Login({setlog})
 {
     const inputemail=useRef(null);
     const inputpass=useRef(null);
+    const [d1, setd1]=useState("");
     const [show,setshow]=useState(false);
     async function send() {
         const email = inputemail.current.value;
         const password = inputpass.current.value;
-        const response = await fetch("http://localhost:3000/login", {
+        if (email=="" || password=="")
+        {
+            setd1("email or password are required");
+        }
+        else{
+            const response = await fetch("http://localhost:3000/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password }),
-        });
-        
-        const data = await response.json();
-        alert(data.message);
-        if (data.token) {
-            localStorage.setItem('token', data.token);
+            });
+            const data = await response.json();
+            alert(data.message);
+            if (data.token) 
+            {
+                localStorage.setItem('token', data.token);
+            }
+            setlog(true);
         }
     }
     return <>
@@ -35,8 +44,9 @@ export default function Login()
         type={show ? "text":"password"}
         placeholder="your password"
     />
-    <br />
+    <div>{d1}</div>
     <button onClick={() => setshow(!show)}>{show ? "Hide" : "Show"}</button>
     <button onClick={send}>sumbit</button>
     </>
 }
+export default Login
