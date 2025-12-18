@@ -18,15 +18,18 @@ function Login({setlog})
             const response = await fetch("http://localhost:3000/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            credentials: "include",
             body: JSON.stringify({ email, password }),
             });
             const data = await response.json();
-            alert(data.message);
-            if (data.token) 
+            if (data.message=="Login success")
             {
-                localStorage.setItem('token', data.token);
+                setlog(true);
             }
-            setlog(true);
+            else
+            {
+                setd1(data.message);
+            }
         }
     }
     return <>

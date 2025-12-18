@@ -16,9 +16,11 @@ function Upload({file,setfile}){
     async function filepost() {
         const res=await fetch("http://localhost:3000/upload",{
             method:"POST",
+            credentials: "include",
             body:data
         })
         const result=await res.json()
+        alert(result.message);
         if (result.ok){
             setr(true);
         }

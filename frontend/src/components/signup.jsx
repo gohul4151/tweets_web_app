@@ -34,8 +34,14 @@ function Signup({setlogin})
             });
             
             const data = await response.json();
-            alert(data.message);
-            setlogin(true);
+            if (data.message=="User signed up")
+            {
+                setlogin(true);
+            }
+            else
+            {
+                setd1(data.message);
+            }
         }
     }
     return <>
