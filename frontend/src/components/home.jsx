@@ -18,11 +18,14 @@ function Home({setlog})
     <div>
         <div>
             posts
+            <div>
+                title
+            </div>
         </div>
         <div>
             <button onClick={() => setclose(true)}>+</button>
             <button onClick={() => setp_c(true)}>your profile</button>
-            <button onclick={() => setyou(true)}>your post</button>
+            <button onClick={() => setyou(true)}>your post</button>
             <button onClick={() => setlog(false)}>logout</button>
             {close && <Post close={close} setclose={setclose} />}
             {p_c && <Profile p_c={p_c} setp_c={setp_c}/>}
