@@ -1,7 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 const cloudinary = require("./cloudinary");
-const auth = require("./auth"); // IMPORTANT FIX
+const { auth }= require("./auth"); // IMPORTANT FIX
 
 const router = express.Router();
 
@@ -16,7 +16,7 @@ const upload = multer({
 router.post("/", auth, upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ ok: false, message: "No file uploaded" });
+      return res.status(400).json({ message: "No file uploaded" });
     }
 
     const fileType = req.file.mimetype.startsWith("video")
@@ -49,14 +49,17 @@ router.post("/", auth, upload.single("file"), async (req, res) => {
     console.log(uploadResult);
 
     res.json({
-      ok: true,
       url: uploadResult.secure_url,
-      type: fileType
+      type: fileType,
+      message: "File uploaded successfully"
     });
 
   } catch (error) {
-    res.status(500).json({ ok: false, error: error.message });
+    res.status(500).json({message: error.message });
   }
 });
 
 module.exports = { uploadRoute: router };
+ //uploadResult.secure_url
+ //created_at: '2025-12-18T08:55:24Z'
+ //resource_type: 'video' or 'image' 
