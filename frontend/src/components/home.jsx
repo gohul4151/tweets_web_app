@@ -1,9 +1,11 @@
 import {useState} from "react";
 import FileUpload from "./upload_post";
 import '../modal.css';
+import Profile from "./viewprofile";
 function Home({setlog})
 {
     const [close,setclose]=useState(false);
+    const [p_c,setp_c]=useState(false);
     return <>
     <div>
         <div>
@@ -11,10 +13,11 @@ function Home({setlog})
         </div>
         <div>
             <button onClick={() => setclose(true)}>+</button>
-            <button>your profile</button>
+            <button onClick={() => setp_c(true)}>your profile</button>
             <button >your post</button>
             <button onClick={() => setlog(false)}>logout</button>
             {close && <Post close={close} setclose={setclose} />}
+            {p_c && <Profile p_c={p_c} setp_c={setp_c}/>}
         </div>
     </div>
     </>
