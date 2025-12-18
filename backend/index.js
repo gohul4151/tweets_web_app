@@ -5,13 +5,29 @@ const {userModel}=require('./db');
 const jwt = require('jsonwebtoken');
 const cors = require("cors");
 const {z} = require("zod");
+const {uploadRoute} = require("./upload");
 
 
 mongoose.connect("mongodb+srv://dharaneesh1881:Dd%409790361881@cluster0.su0jsfi.mongodb.net/tweet");
-const JWT_SECRET="dharaneesh1881";
+const {JWT_SECRET}=require('./auth');
+const{auth}=require('./auth');  
 const app= express();
 app.use(express.json());
-app.use(cors());
+const allowedOrigins = (process.env.CORS_ORIGINS || "http://localhost:5173,http://127.0.0.1:5173")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(null, false);
+    },
+    credentials: true
+  })
+);
+app.use(require("cookie-parser")());
 
 app.post("/signup",async function(req,res){
     const requiredbody = z.object({
@@ -79,11 +95,11 @@ app.post("/login", async function(req,res){
  
     const user = await userModel.findOne({
         email:email
-    })
+    });
 
     if(!user){
         res.status(403).json({
-            message:"user does not exit "
+            message:"user does not exist "
         });
         return ;
     }
@@ -95,35 +111,27 @@ app.post("/login", async function(req,res){
             id:user._id
         },JWT_SECRET);
 
-        res.json({
-            token:token
+        res.cookie("token", token, {
+        httpOnly: true,
+        secure: false,     // true in production (HTTPS)
+        sameSite: "lax"
         });
+
+        res.json({ message: "Login success" ,
+        token:token
+        });
+
 
     }
     else{
         res.status(403).json({
             message:"incorrect cretentials"
-        })
+        });
+        return ;
     }
 
 });
 
-
-function auth(req,res,next){
-    const token = req.header.token
-    
-    const decoded = jwt.verify(token,JWT_SECRET);
-
-    if(decoded){
-        req.userId=decoded.id;
-        next();
-    }
-    else{
-        res.status(403).json({
-            message:"incorrect cretentials"
-        })
-    }
-
-}
+app.use("/upload", uploadRoute);
 
 app.listen(3000);
