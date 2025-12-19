@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import '../modal.css';
-function FileUpload(){
+function FileUpload({des,ti}){
     const [file, setfile]=useState();
     const [up,setup]=useState(false);
     return <>
@@ -8,11 +8,11 @@ function FileUpload(){
         <input type="file" onChange={(e) => {setfile(e.target.files[0]);
             setup(true);
         }}/>
-        <Upload file={file} up={up}/>
+        <Upload file={file} up={up} des={des} ti={ti}/>
     </div>
     </>
 }
-function Upload({file,up}){
+function Upload({file,up,ti,des}){
     const [r,setr]=useState(null);
     const [c,setc]=useState(false);
     const data=new FormData();
@@ -23,7 +23,9 @@ function Upload({file,up}){
             const res=await fetch("http://localhost:3000/upload",{
             method:"POST",
             credentials: "include",
-            body:data
+            body:data,
+            title:ti.current.value,
+            description:des.current.value
             })
             const result=await res.json()
             alert(result.message);
