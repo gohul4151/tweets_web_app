@@ -1,4 +1,4 @@
-import {useState,useRef} from "react";
+import {useState,useRef,useEffect} from "react";
 import FileUpload from "./upload_post";
 import '../modal.css';
 import Profile from "./viewprofile";
@@ -6,24 +6,25 @@ import YourPost from "./your_post";
 import Addpost from "./post";
 function Home({setlog})
 {
-    const [p1,setp1]=useState(false);
+    const [p1,setp1]=useState([]);
     const [close,setclose]=useState(false);
     const [p_c,setp_c]=useState(false);
     const [you_post,setyou]=useState(false);
-    if (p1==false)
-    {
-        async function getting_post() {
-            const result=await fetch("http://localhost:3000/get-post",{
-                method:"GET",
-                credentials: "include",
-            })
-            const data=result.json();
-            if(data.message=="ok")
-            {
-                usep1(data);
+    useEffect(() => {
+            async function getting_post() {
+                try {
+                    const result = await fetch("http://localhost:3000/get-post", {
+                        method: "GET",
+                        credentials: "include",
+                    });
+                    const data = await result.json();
+                    setp1(data);
+                } catch (error) {
+                    console.error("Error fetching posts:", error);
+                }
             }
-        }
-    }
+            getting_post();
+        }, []);
     if (you_post==true)
     {
         return <>
@@ -33,7 +34,13 @@ function Home({setlog})
     return <>
     <div>
         <div>
-            <Addpost p1={p1}/>
+            {p1.length > 0 ? (
+                    p1.map((post, index) => (
+                        <Addpost key={index} p1={post} />
+                    ))
+                ) : (
+                    <p>No posts to display</p>
+                )}
         </div>
         <div>
             <button onClick={() => setclose(true)}>+</button>
@@ -47,8 +54,8 @@ function Home({setlog})
     </>
 } 
 function Post({close,setclose}){
-    const [ti,setti]=useRef(null);
-    const [des,setdes]=useRef(null);
+    const ti=useRef(null);
+    const des=useRef(null);
     return <>
         <div className="postmainback">
             <div className="postfront">
@@ -68,7 +75,7 @@ function Post({close,setclose}){
                     <input type="text" placeholder="Enter the tag" />
                 </div>
                 <div className="postbuttons">
-                    <FileUpload des={des} ti={ti} setdes={setdes} setti={setti}/>
+                    <FileUpload des={des} ti={ti} />
                     <button onClick={Addpost}>Post</button>
                 </div>
             </div>

@@ -12,7 +12,8 @@ function Addpost({p1})
             </div>
             <div>
                 {p1.type=="image" && <img src={d.url} ></img>}
-                {p1.type=="video" && }
+                {p1.type=="video" && <video src={d.url} controls width="500" />
+}
             </div>
             <div>
                 {p1.descripction}
