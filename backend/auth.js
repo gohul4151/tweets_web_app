@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const JWT_SECRET="dharaneesh1881";
+app.use(express.json());
 
 function auth(req,res,next){
     //const token = req.header.token

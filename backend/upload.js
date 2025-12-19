@@ -5,6 +5,7 @@ const { auth }= require("./auth"); // IMPORTANT FIX
 const { userModel,postModel } = require("./db");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("./auth");
+app.use(express.json());
 
 
 
@@ -55,6 +56,8 @@ router.post("/", auth, upload.single("file"), async (req, res) => {
 
 
     try {
+      const { title, description ,tag} = req.body;
+
       const token = req.cookies.token;
       const decoded = jwt.verify(token,JWT_SECRET);
       const userId=decoded.id;
@@ -63,9 +66,9 @@ router.post("/", auth, upload.single("file"), async (req, res) => {
         url:uploadResult.secure_url,
         type:uploadResult.resource_type,
         time:uploadResult.created_at,
-        title:req.title,
-        description:req.description,
-        tags:req.tags
+        title:title,
+        description:description,
+        tags:tag
       });
 
       const user = await userModel.findOne({
