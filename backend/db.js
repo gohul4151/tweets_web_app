@@ -8,7 +8,7 @@ const user = new Schema({
     name:{type:String , unique:true, required:true},
     email:{type: String, unique:true, required:true},
     password:{type:String,  required:true},
-    profile:String,
+    profile_url:String,
     post_ids:[ObjectId]
     
 })
@@ -20,15 +20,13 @@ const post =new Schema({
     time:String,
     title:String,
     description:String,
-    tags:[String],
-
-
+    tags:[String]
 })
 
 const userModel= mongoose.model("users",user);
-//const todoModel= mongoose.model("todos",todo);
+const postModel= mongoose.model("post",todo);
 
 module.exports={
-    userModel:userModel
-    //todoModel:todoModel
+    userModel:userModel,
+    postModel:postModel
 } 

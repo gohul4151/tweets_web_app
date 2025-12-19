@@ -2,6 +2,11 @@ const express = require("express");
 const multer = require("multer");
 const cloudinary = require("./cloudinary");
 const { auth }= require("./auth"); // IMPORTANT FIX
+const { userModel,postModel } = require("./db");
+const jwt = require("jsonwebtoken");
+const { JWT_SECRET } = require("./auth");
+
+
 
 const router = express.Router();
 
@@ -47,6 +52,36 @@ router.post("/", auth, upload.single("file"), async (req, res) => {
     });
 
     console.log(uploadResult);
+
+
+    try {
+      const token = req.cookies.token;
+      const decoded = jwt.verify(token,JWT_SECRET);
+      const userId=decoded.id;
+      const post=await postModel.create({
+        userId:userId,
+        url:uploadResult.secure_url,
+        type:uploadResult.resource_type,
+        time:uploadResult.created_at,
+        title:req.title,
+        description:req.description,
+        tags:req.tags
+      });
+
+      const user = await userModel.findOne({
+        _id:userId
+      });
+
+      user.post_ids.unshift(post._id);
+      await user.save();
+    }
+    catch (e) {
+        console.log(e);
+        res.status(500).json({            
+        message:"Error in saving post to DB"
+        });
+        return;
+    }
 
     res.json({
       url: uploadResult.secure_url,

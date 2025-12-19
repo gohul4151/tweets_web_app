@@ -117,10 +117,16 @@ app.post("/login", async function(req,res){
         sameSite: "lax"
         });
 
-        res.json({ message: "Login success" ,
-        token:token
-        });
+        if(user.profile_url==undefined){
+            user.profile_url="https://img.freepik.com/premium-vector/user-profile-icon-flat-style-member-avatar-vector-illustration-isolated-background-human-permission-sign-business-concept_157943-15752.jpg?semt=ais_hybrid&w=740&q=80",
+            await user.save();
+        }
 
+        res.json({ message: "Login success" ,
+            token:token,
+            name:user.name,
+            profile_url:user.profile_url
+        });
 
     }
     else{
