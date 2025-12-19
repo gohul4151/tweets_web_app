@@ -21,7 +21,7 @@ const post =new Schema({
     time:String,
     title:String,
     description:String,
-    tags:[String]
+    tags:String
 })
 
 const userModel= mongoose.model("users",user);

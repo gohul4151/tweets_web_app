@@ -68,7 +68,7 @@ router.post("/", auth, upload.single("file"), async (req, res) => {
         time:uploadResult.created_at,
         title:title,
         description:description,
-        tags:tag
+        tags:tag   
       });
 
       const user = await userModel.findOne({
