@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const cors = require("cors");
 const {z} = require("zod");
 const {uploadRoute} = require("./upload");
+const {getpostRoute} = require("./getpost");
 
 
 mongoose.connect("mongodb+srv://dharaneesh1881:Dd%409790361881@cluster0.su0jsfi.mongodb.net/tweet");
@@ -99,7 +100,7 @@ app.post("/login", async function(req,res){
 
     if(!user){
         res.status(403).json({
-            message:"user does not exist "
+            message:"user does not exist"
         });
         return ;
     }
@@ -139,5 +140,7 @@ app.post("/login", async function(req,res){
 });
 
 app.use("/upload", uploadRoute);
+
+app.use("/post", getpostRoute);
 
 app.listen(3000);

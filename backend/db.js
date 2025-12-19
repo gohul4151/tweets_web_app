@@ -1,4 +1,5 @@
 const mongoose=require("mongoose");
+const { ps } = require("zod/v4/locales");
 const { id, ta } = require("zod/v4/locales");
 
 const Schema = mongoose.Schema;
@@ -24,7 +25,7 @@ const post =new Schema({
 })
 
 const userModel= mongoose.model("users",user);
-const postModel= mongoose.model("post",todo);
+const postModel= mongoose.model("posts",post);
 
 module.exports={
     userModel:userModel,
