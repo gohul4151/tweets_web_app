@@ -56,6 +56,7 @@ function Home({setlog})
 function Post({close,setclose}){
     const ti=useRef(null);
     const des=useRef(null);
+    const tag=useRef(null);
     return <>
         <div className="postmainback">
             <div className="postfront">
@@ -72,10 +73,10 @@ function Post({close,setclose}){
                 </div>
                 <div className="posttag">
                     <p>tag(optional)</p>
-                    <input type="text" placeholder="Enter the tag" />
+                    <input rel={tag} type="text" placeholder="Enter the tag" />
                 </div>
                 <div className="postbuttons">
-                    <FileUpload des={des} ti={ti} />
+                    <FileUpload des={des} ti={ti} tag={tag}/>
                     <button onClick={() =>{
                         Addpost();
                         setclose(false);
