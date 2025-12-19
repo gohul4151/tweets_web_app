@@ -1,6 +1,6 @@
 const express = require('express');
 const { auth } = require('./auth');
-app.use(express.json());
+
 
 const router = express.Router();
 

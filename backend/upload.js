@@ -5,7 +5,7 @@ const { auth }= require("./auth"); // IMPORTANT FIX
 const { userModel,postModel } = require("./db");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("./auth");
-app.use(express.json());
+
 
 
 
