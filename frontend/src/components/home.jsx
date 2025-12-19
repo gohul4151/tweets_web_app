@@ -76,7 +76,10 @@ function Post({close,setclose}){
                 </div>
                 <div className="postbuttons">
                     <FileUpload des={des} ti={ti} />
-                    <button onClick={Addpost}>Post</button>
+                    <button onClick={() =>{
+                        Addpost();
+                        setclose(false);
+                    }}>Post</button>
                 </div>
             </div>
         </div>
