@@ -10,18 +10,24 @@ const user = new Schema({
     email:{type: String, unique:true, required:true},
     password:{type:String,  required:true},
     profile_url:String,
-    post_ids:[ObjectId]
+    post_ids:[{ type: mongoose.Schema.Types.ObjectId, ref: "posts" }]
     
 })
 
 const post =new Schema({
-    userId:ObjectId,
+    userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "users"
+    },
     url:String,
     type:String,
     time:String,
     title:String,
     description:String,
-    tags:String
+    tags:String,
+
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "users" }],
+    dislikes: [{ type: mongoose.Schema.Types.ObjectId, ref: "users" }]
 })
 
 const userModel= mongoose.model("users",user);

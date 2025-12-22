@@ -58,11 +58,12 @@ router.post("/", auth, upload.single("file"), async (req, res) => {
     try {
       const { title, description ,tag} = req.body;
 
-      const token = req.cookies.token;
-      const decoded = jwt.verify(token,JWT_SECRET);
-      const userId=decoded.id;
+      //const token = req.cookies.token;
+      //const decoded = jwt.verify(token,JWT_SECRET);
+      //const userId=decoded.id;
+
       const post=await postModel.create({
-        userId:userId,
+        userId:req.userId,
         url:uploadResult.secure_url,
         type:uploadResult.resource_type,
         time:uploadResult.created_at,
@@ -72,7 +73,7 @@ router.post("/", auth, upload.single("file"), async (req, res) => {
       });
 
       const user = await userModel.findOne({
-        _id:userId
+         _id:req.userId
       });
 
       user.post_ids.unshift(post._id);
