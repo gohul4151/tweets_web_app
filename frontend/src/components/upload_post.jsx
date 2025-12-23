@@ -2,7 +2,7 @@ import {useState} from 'react';
 import Addpostupdate from './post_update';
 import '../modal.css';
 
-function FileUpload({des,ti,tag}) {
+function FileUpload({des,ti,tag,setclose,addpost}) {
     const [file, setfile] = useState(null);
     const [up, setup] = useState(false);
     const [r,setr]=useState();
@@ -23,7 +23,7 @@ function FileUpload({des,ti,tag}) {
             }}/>
             <div>{r}</div>
             {up && <Upload file={file} setup={setup} r={r} setr={setr} up={up}/>}
-            <Addpostupdate des={des} ti={ti} tag={tag} file={file} />
+            <Addpostupdate des={des} ti={ti} tag={tag} file={file} setclose={setclose} addpost={addpost}/>
         </div>
     </>
 }

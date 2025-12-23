@@ -7,15 +7,15 @@ import Addpost from "./post";
 
 function Home({setlog})
 {
-    const [posts, setPosts] = useState([]);
-    const [close, setclose] = useState(false);
-    const [p_c, setp_c] = useState(false);
-    const [you_post, setyou] = useState(false);
+    const [p1,setp1]=useState([]);
+    const [close,setclose]=useState(false);
+    const [p_c,setp_c]=useState(false);
+    const [you_post,setyou]=useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
-
-    // Fetch posts with pagination
+    const [hasMore, setHasMore] = useState(true);
+    const [refpost,setrefpost]=useState(0);
+    
     const fetchPosts = async (page = 1) => {
         setIsLoading(true);
         try {
@@ -25,14 +25,32 @@ function Home({setlog})
             });
             const data = await result.json();
             
-            if (page === 1) {
-                setPosts(data.posts); // Initial load
-            } else {
-                setPosts(prev => [...prev, ...data.posts]); // Append for infinite scroll
+            console.log("API Response:", data); // Debug log
+            
+            // Check if data has posts array
+            const postsArray = data.posts;
+            
+            if (!Array.isArray(postsArray)) {
+                console.error("Expected array but got:", postsArray);
+                return;
             }
             
-            // If your API returns total pages, set it here
-            // setTotalPages(data.totalPages);
+            if (postsArray.length === 0) {
+                // No more posts to load
+                setHasMore(false);
+            } else {
+                // Append new posts to existing ones
+                if (page === 1) {
+                    setp1(postsArray);
+                } else {
+                    setp1(prev => [...prev, ...postsArray]);
+                }
+                
+                // Check if this was the last page (less than 10 posts)
+                if (postsArray.length < 10) {
+                    setHasMore(false);
+                }
+            }
             
         } catch (error) {
             console.error("Error fetching posts:", error);
@@ -41,93 +59,90 @@ function Home({setlog})
         }
     };
 
+    // Initial load and when page changes
     useEffect(() => {
         fetchPosts(currentPage);
-    }, [currentPage]);
+    }, [currentPage,refpost]);
 
-    // For pagination buttons
-    const handleNextPage = () => {
-        setCurrentPage(prev => prev + 1);
-    };
-
-    const handlePreviousPage = () => {
-        if (currentPage > 1) {
-            setCurrentPage(prev => prev - 1);
-        }
-    };
-
-    // For infinite scroll (optional)
+    // Infinite scroll handler
     const handleScroll = () => {
-        if (
-            window.innerHeight + document.documentElement.scrollTop === 
-            document.documentElement.offsetHeight && 
-            !isLoading && 
-            currentPage < totalPages
-        ) {
+        if (isLoading || !hasMore) return;
+        
+        const scrollTop = document.documentElement.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = document.documentElement.clientHeight;
+        
+        // Load more when user is near bottom (100px from bottom)
+        if (scrollTop + clientHeight >= scrollHeight - 100) {
             setCurrentPage(prev => prev + 1);
         }
     };
 
-    // Add scroll listener for infinite scroll
+    // Add scroll listener
     useEffect(() => {
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
-    }, [isLoading, currentPage, totalPages]);
+    }, [isLoading, hasMore]);
+
+    // Reset states when component mounts
+    useEffect(() => {
+        setp1([]);
+        setCurrentPage(1);
+        setHasMore(true);
+    }, []);
+
+    const addpost = () => {
+        setrefpost(prev => prev + 1);
+    };
 
     if (you_post) {
-        return <YourPost you_post={you_post} setyou={setyou} />
+        return <YourPost you_post={you_post} setyou={setyou}/>
     }
-
-    return <>
+    
+    return (
         <div>
             <div>
-                {posts.length > 0 ? (
-                    posts.map((post, index) => (
-                        <Addpost key={post._id} p1={post} /> //{/* Fixed: using post._id as key */}
+                {p1.length > 0 ? (
+                    p1.map((post, index) => (
+                        <Addpost key={post._id || index} p1={post} />
                     ))
-                ) : (
+                ) : !isLoading ? (
                     <p>No posts to display</p>
+                ) : null}
+                
+                {/* Loading indicator at bottom */}
+                {isLoading && (
+                    <div style={{ textAlign: 'center', padding: '20px' }}>
+                        <p>Loading more posts...</p>
+                    </div>
                 )}
                 
-                {isLoading && <p>Loading more posts...</p>}
-                
-                {/* Pagination Controls */}
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', margin: '20px 0' }}>
-                    <button 
-                        onClick={handlePreviousPage} 
-                        disabled={currentPage === 1 || isLoading}
-                    >
-                        Previous
-                    </button>
-                    <span>Page {currentPage}</span>
-                    <button 
-                        onClick={handleNextPage}
-                        disabled={isLoading}
-                    >
-                        Next
-                    </button>
-                </div>
+                {/* Show message when no more posts */}
+                {!hasMore && p1.length > 0 && !isLoading && (
+                    <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+                        <p>No more posts to load</p>
+                    </div>
+                )}
             </div>
             
-            <div>
+            <div style={{ position: 'fixed', bottom: '20px', right: '20px', display: 'flex', gap: '10px' }}>
                 <button onClick={() => setclose(true)}>+</button>
                 <button onClick={() => setp_c(true)}>your profile</button>
                 <button onClick={() => setyou(true)}>your post</button>
                 <button onClick={() => setlog(false)}>logout</button>
-                
-                {close && <Post close={close} setclose={setclose} />}
-                {p_c && <Profile p_c={p_c} setp_c={setp_c}/>}
             </div>
+            
+            {close && <Post close={close} setclose={setclose} addpost={addpost}/>}
+            {p_c && <Profile p_c={p_c} setp_c={setp_c}/>}
         </div>
-    </>
+    );
 }
 
-function Post({close,setclose}){
+function Post({close,setclose,addpost}){
     const ti=useRef(null);
     const des=useRef(null);
     const tag=useRef(null);
-    
-    return <>
+    return (
         <div className="postmainback">
             <div className="postfront">
                 <div className="postclose">
@@ -143,14 +158,14 @@ function Post({close,setclose}){
                 </div>
                 <div className="posttag">
                     <p>tag(optional)</p>
-                    <input ref={tag} type="text" placeholder="Enter the tag" /> {/* Fixed: ref instead of rel */}
+                    <input ref={tag} type="text" placeholder="Enter the tag" />
                 </div>
                 <div className="postbuttons">
-                    <FileUpload des={des} ti={ti} tag={tag}/>
+                    <FileUpload des={des} ti={ti} tag={tag} setclose={setclose} addpost={addpost}/>
                 </div>
             </div>
         </div>
-    </>
+    );
 }
 
-export default Home
+export default Home;
