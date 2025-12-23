@@ -27,10 +27,9 @@ function Addpost({p1, del, onDelete}) {
                 method: 'DELETE',
                 credentials: 'include'
             });
-            
             const result = await response.json();
-            
-            if (result.success) {
+            console.log("response",result);
+            if (result) {
                 // Call the onDelete callback if provided
                 if (onDelete) {
                     onDelete(p1._id);

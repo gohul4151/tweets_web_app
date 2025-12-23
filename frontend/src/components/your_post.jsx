@@ -5,7 +5,8 @@ function YourPost({you_post, setyou})
 {
     const [pos, setpos] = useState([]);
     const [totalPosts, setTotalPosts] = useState(0);
-    
+    let name=useRef(null);
+    let profile=useRef(null);
     useEffect(() => {
         async function getting_post_user() {
             try {
@@ -14,7 +15,9 @@ function YourPost({you_post, setyou})
                     credentials: "include",
                 })
                 const a=await res.json();
-                setTotalPosts(a.body.totalPosts);
+                setTotalPosts(a.totalPosts);
+                name.current=a.name;
+                profile.current=a.profile_url;
                 const result = await fetch("http://localhost:3000/getmypost", {
                     method: "GET",
                     credentials: "include",
@@ -44,8 +47,8 @@ function YourPost({you_post, setyou})
     return (
         <div>
             <div>
-                <div>profile</div>
-                <div>username</div>
+                <div>profile:<img src={profile.current} alt="profile" className="profile-pic"/></div>
+                <div>username:{name.current}</div>
                 <div>total no of post: {totalPosts}</div>
                 <button onClick={() => setyou(false)}>back</button>
             </div>
