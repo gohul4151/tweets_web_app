@@ -213,7 +213,6 @@ app.delete("/deletepost/:id",auth,async (req, res) => {
   try {
     const postId = req.params.id;
     const userId = req.userId;
-    console.log(postId,userId);
 
     const post = await postModel.findById(postId);
 
