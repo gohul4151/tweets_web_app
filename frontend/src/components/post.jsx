@@ -22,30 +22,26 @@ function Addpost({p1, del, onDelete}) {
     }, [showOptions]);
     
     const handleDelete = async () => {
-        if (window.confirm('Are you sure you want to delete this post?')) {
-            try {
-                const response = await fetch(`http://localhost:3000/deletepost/${p1._id}`, {
-                    method: 'DELETE',
-                    credentials: 'include'
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    alert('Post deleted successfully');
-                    // Call the onDelete callback if provided
-                    if (onDelete) {
-                        onDelete(p1._id);
-                    }
-                } else {
-                    alert('Failed to delete post: ' + (result.message || 'Unknown error'));
+        try {
+            const response = await fetch(`http://localhost:3000/deletepost/${p1._id}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Call the onDelete callback if provided
+                if (onDelete) {
+                    onDelete(p1._id);
                 }
-            } catch (error) {
-                console.error('Error deleting post:', error);
-                alert('Error deleting post');
             }
-            setShowOptions(false);
+            // No alerts - silent failure
+        } catch (error) {
+            console.error('Error deleting post:', error);
+            // No alerts - silent failure
         }
+        setShowOptions(false);
     };
     
     return (

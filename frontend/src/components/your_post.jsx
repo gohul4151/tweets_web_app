@@ -9,14 +9,25 @@ function YourPost({you_post, setyou})
     useEffect(() => {
         async function getting_post_user() {
             try {
+                const res=await fetch("http://localhost:3000/mytotalpost",{
+                    method:"GET",
+                    credentials: "include",
+                })
+                const a=await res.json();
+                setTotalPosts(a.body.totalPosts);
                 const result = await fetch("http://localhost:3000/getmypost", {
                     method: "GET",
                     credentials: "include",
                 });
-                const data = await result.json();
-                
+                const data=await result.json();
                 console.log("API Response:", data); // Check actual structure
-                
+                if (Array.isArray(data)) {
+                    // If data is directly an array
+                    setpos(data);
+                } else if (data.posts && Array.isArray(data.posts)) {
+                    // If data has posts property
+                    setpos(data.posts);
+                }
                 
             } catch (error) {
                 console.error("Error fetching posts:", error);
