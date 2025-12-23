@@ -1,8 +1,50 @@
-import {useState} from 'react';
-import '../post.css'; // Import the CSS file
+import {useState, useEffect, useRef} from 'react';
+import '../post.css';
 
-function Addpost({p1})
-{
+function Addpost({p1, del}) {
+    const [showOptions, setShowOptions] = useState(false);
+    const optionsRef = useRef(null);
+    
+    // Close menu when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (optionsRef.current && !optionsRef.current.contains(event.target)) {
+                setShowOptions(false);
+            }
+        }
+        
+        if (showOptions) {
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => {
+                document.removeEventListener('mousedown', handleClickOutside);
+            };
+        }
+    }, [showOptions]);
+    
+    const handleDelete = async () => {
+        if (window.confirm('Are you sure you want to delete this post?')) {
+            try {
+                const response = await fetch(`http://localhost:3000/deletepost/${p1._id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Post deleted successfully');
+                    // You can add a callback here if needed
+                } else {
+                    alert('Failed to delete post: ' + (result.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error deleting post:', error);
+                alert('Error deleting post');
+            }
+            setShowOptions(false);
+        }
+    };
+    
     return (
         <div className="post-container">
             <div className="post-header">
@@ -11,8 +53,41 @@ function Addpost({p1})
                     alt="profile" 
                     className="profile-pic"
                 />
-                <span className="username">{p1.userId?.name}</span>  {/* alternative way: {p1.userId ? p1.userId.name : ''} */}
-                <div>{p1.timeAgo}</div>
+                <span className="username">{p1.userId?.name}</span>
+                {p1.timeAgo && <div>{p1.timeAgo}</div>}
+                
+                {/* Three-dot options menu - only show if del prop is true */}
+                {del && (
+                    <div className="post-options" ref={optionsRef}>
+                        <button 
+                            className="options-button"
+                            onClick={() => setShowOptions(!showOptions)}
+                            title="More options"
+                        >
+                            ⋮
+                        </button>
+                        
+                        {showOptions && (
+                            <>
+                                <div className="options-overlay"></div>
+                                <div className="options-menu">
+                                    <button 
+                                        className="option-item delete-option" 
+                                        onClick={handleDelete}
+                                    >
+                                        🗑️ Delete Post
+                                    </button>
+                                    <button 
+                                        className="option-item cancel-option" 
+                                        onClick={() => setShowOptions(false)}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                )}
             </div>
             
             {p1.title && (

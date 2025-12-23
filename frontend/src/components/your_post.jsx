@@ -3,10 +3,11 @@ import Addpost from "./post";
 function YourPost({you_post,setyou})
 {
     const [pos,setpos]=useState([]);
+    const [del,setdel]=useState(true);
     useEffect(() => {
                 async function getting_post_user() {
                     try {
-                        const result = await fetch("http://localhost:3000/get-post-user", {
+                        const result = await fetch("http://localhost:3000/getmypost", {
                             method: "GET",
                             credentials: "include",
                         });
@@ -30,7 +31,7 @@ function YourPost({you_post,setyou})
                 <div >
                     {pos.length > 0 ? (
                         pos.map((post, index) => (
-                        <Addpost key={index} pos={post} />
+                        <Addpost key={index} p1={post} del={del} setdel={setdel}/>
                     ))
                 ) : (
                     <p>No posts to display</p>

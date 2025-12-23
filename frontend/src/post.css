@@ -171,3 +171,125 @@
         background-color: #f5f5f5;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ===== Post Options Menu Styles ===== */
+
+/* Container for the three-dot menu */
+.post-options {
+    position: relative;
+    margin-left: auto;
+}
+
+/* The three-dot button */
+.options-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    padding: 5px 8px;
+    color: #666;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.options-button:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+/* Dropdown menu */
+.options-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    min-width: 140px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+/* Menu items */
+.option-item {
+    width: 100%;
+    padding: 10px 16px;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    color: #333;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.option-item:hover {
+    background-color: #f8f8f8;
+}
+
+/* Delete option specific styles */
+.delete-option {
+    color: #e74c3c !important;
+    font-weight: 500;
+}
+
+.delete-option:hover {
+    background-color: #ffeaea !important;
+}
+
+/* Cancel option */
+.cancel-option {
+    color: #666;
+    border-top: 1px solid #f0f0f0;
+}
+
+/* Responsive styles */
+@media (max-width: 640px) {
+    .options-button {
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+        padding: 4px 6px;
+    }
+    
+    .options-menu {
+        min-width: 120px;
+    }
+    
+    .option-item {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+}
+
+/* Click outside to close menu */
+.options-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999;
+}
