@@ -1,7 +1,7 @@
 import {useState, useEffect, useRef} from 'react';
 import '../post.css';
 
-function Addpost({p1, del}) {
+function Addpost({p1, del, onDelete}) {
     const [showOptions, setShowOptions] = useState(false);
     const optionsRef = useRef(null);
     
@@ -33,7 +33,10 @@ function Addpost({p1, del}) {
                 
                 if (result.success) {
                     alert('Post deleted successfully');
-                    // You can add a callback here if needed
+                    // Call the onDelete callback if provided
+                    if (onDelete) {
+                        onDelete(p1._id);
+                    }
                 } else {
                     alert('Failed to delete post: ' + (result.message || 'Unknown error'));
                 }
