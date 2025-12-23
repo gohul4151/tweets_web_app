@@ -7,8 +7,6 @@ const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("./auth");
 
 
-
-
 const router = express.Router();
 
 // Multer (memory storage)
@@ -105,6 +103,7 @@ router.post("/", auth, upload.single("file"), async (req, res) => {
 });
 
 module.exports = { uploadRoute: router };
+
  //uploadResult.secure_url
  //created_at: '2025-12-18T08:55:24Z'
  //resource_type: 'video' or 'image' 

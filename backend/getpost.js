@@ -2,6 +2,7 @@ const express = require('express');
 const { auth } = require('./auth');  
 const { postModel } = require('./db');      
 const { userModel } = require('./db');   
+const {timeAgo}=require('./timeago');
 
 const router = express.Router();
 
@@ -24,7 +25,8 @@ router.get("/",auth,async (req, res) => {
         isLiked: post.likes.includes(req.userId),
         isDisliked: post.dislikes.includes(req.userId),
         likesCount: post.likes.length,
-        dislikesCount: post.dislikes.length
+        dislikesCount: post.dislikes.length,
+        timeAgo: timeAgo(post.time) // function to convert time to "time ago" format
       };
     });
 
