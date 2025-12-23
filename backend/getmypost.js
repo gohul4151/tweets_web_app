@@ -11,7 +11,6 @@ const router = express.Router();
 router.get("/",auth,async (req, res) => {
   try {
     const user = await userModel.findById(req.userId);
-    res.json({totalPosts:user.post_ids.length});
 
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
