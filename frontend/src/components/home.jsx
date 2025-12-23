@@ -4,59 +4,129 @@ import '../modal.css';
 import Profile from "./viewprofile";
 import YourPost from "./your_post";
 import Addpost from "./post";
+
 function Home({setlog})
 {
-    const [p1,setp1]=useState([]);
-    const [close,setclose]=useState(false);
-    const [p_c,setp_c]=useState(false);
-    const [you_post,setyou]=useState(false);
-    useEffect(() => {
-            async function getting_post() {
-                try {
-                    const result = await fetch("http://localhost:3000/get-post", {
-                        method: "GET",
-                        credentials: "include",
-                    });
-                    const data = await result.json();
-                    setp1(data);
-                } catch (error) {
-                    console.error("Error fetching posts:", error);
-                }
+    const [posts, setPosts] = useState([]);
+    const [close, setclose] = useState(false);
+    const [p_c, setp_c] = useState(false);
+    const [you_post, setyou] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Fetch posts with pagination
+    const fetchPosts = async (page = 1) => {
+        setIsLoading(true);
+        try {
+            const result = await fetch(`http://localhost:3000/getpost?page=${page}`, {
+                method: "GET",
+                credentials: "include",
+            });
+            const data = await result.json();
+            
+            if (page === 1) {
+                setPosts(data.posts); // Initial load
+            } else {
+                setPosts(prev => [...prev, ...data.posts]); // Append for infinite scroll
             }
-            getting_post();
-        }, []);
-    if (you_post==true)
-    {
-        return <>
-            <YourPost you_post={you_post} setyou={setyou}/>
-        </>
+            
+            // If your API returns total pages, set it here
+            // setTotalPages(data.totalPages);
+            
+        } catch (error) {
+            console.error("Error fetching posts:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchPosts(currentPage);
+    }, [currentPage]);
+
+    // For pagination buttons
+    const handleNextPage = () => {
+        setCurrentPage(prev => prev + 1);
+    };
+
+    const handlePreviousPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(prev => prev - 1);
+        }
+    };
+
+    // For infinite scroll (optional)
+    const handleScroll = () => {
+        if (
+            window.innerHeight + document.documentElement.scrollTop === 
+            document.documentElement.offsetHeight && 
+            !isLoading && 
+            currentPage < totalPages
+        ) {
+            setCurrentPage(prev => prev + 1);
+        }
+    };
+
+    // Add scroll listener for infinite scroll
+    useEffect(() => {
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [isLoading, currentPage, totalPages]);
+
+    if (you_post) {
+        return <YourPost you_post={you_post} setyou={setyou} />
     }
+
     return <>
-    <div>
         <div>
-            {p1.length > 0 ? (
-                    p1.map((post, index) => (
-                        <Addpost key={index} p1={post} />
+            <div>
+                {posts.length > 0 ? (
+                    posts.map((post, index) => (
+                        <Addpost key={post._id} p1={post} /> //{/* Fixed: using post._id as key */}
                     ))
                 ) : (
                     <p>No posts to display</p>
                 )}
+                
+                {isLoading && <p>Loading more posts...</p>}
+                
+                {/* Pagination Controls */}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', margin: '20px 0' }}>
+                    <button 
+                        onClick={handlePreviousPage} 
+                        disabled={currentPage === 1 || isLoading}
+                    >
+                        Previous
+                    </button>
+                    <span>Page {currentPage}</span>
+                    <button 
+                        onClick={handleNextPage}
+                        disabled={isLoading}
+                    >
+                        Next
+                    </button>
+                </div>
+            </div>
+            
+            <div>
+                <button onClick={() => setclose(true)}>+</button>
+                <button onClick={() => setp_c(true)}>your profile</button>
+                <button onClick={() => setyou(true)}>your post</button>
+                <button onClick={() => setlog(false)}>logout</button>
+                
+                {close && <Post close={close} setclose={setclose} />}
+                {p_c && <Profile p_c={p_c} setp_c={setp_c}/>}
+            </div>
         </div>
-        <div>
-            <button onClick={() => setclose(true)}>+</button>
-            <button onClick={() => setp_c(true)}>your profile</button>
-            <button onClick={() => setyou(true)}>your post</button>
-            <button onClick={() => setlog(false)}>logout</button>
-            {close && <Post close={close} setclose={setclose} />}
-            {p_c && <Profile p_c={p_c} setp_c={setp_c}/>}
-        </div>
-    </div>
     </>
-} 
+}
+
 function Post({close,setclose}){
     const ti=useRef(null);
     const des=useRef(null);
     const tag=useRef(null);
+    
     return <>
         <div className="postmainback">
             <div className="postfront">
@@ -73,17 +143,14 @@ function Post({close,setclose}){
                 </div>
                 <div className="posttag">
                     <p>tag(optional)</p>
-                    <input rel={tag} type="text" placeholder="Enter the tag" />
+                    <input ref={tag} type="text" placeholder="Enter the tag" /> {/* Fixed: ref instead of rel */}
                 </div>
                 <div className="postbuttons">
                     <FileUpload des={des} ti={ti} tag={tag}/>
-                    <button onClick={() =>{
-                        Addpost();
-                        setclose(false);
-                    }}>Post</button>
                 </div>
             </div>
         </div>
     </>
 }
+
 export default Home

@@ -1,18 +1,18 @@
 import {useState} from 'react';
-function Addpost({post})
+function Addpost({p1})
 {
     return <>
         <div>
             <div>
-                {post.username}
+                {p1.username}
                 <img src={p1.profile_url} ></img>
             </div>
             <div>
-                {post.title}
+                {p1title}
             </div>
             <div>
-                {post.type=="image" && <img src={post.url} ></img>}
-                {post.type=="video" && <video src={post.url} controls width="500" />}
+                {p1.type=="image" && <img src={p1.url} ></img>}
+                {p1.type=="video" && <video src={p1.url} controls width="500" />}
             </div>
             <div>
                 {p1.descripction}
