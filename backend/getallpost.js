@@ -6,7 +6,7 @@ const { timeAgo }=require('./timeAgo');
 
 const router = express.Router();
 
-router.get("/",async (req, res) => { 
+router.get("/",auth,async (req, res) => { 
     try {
     const page = parseInt(req.query.page) || 1;
     const limit = 10;

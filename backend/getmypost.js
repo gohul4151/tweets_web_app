@@ -21,7 +21,8 @@ router.get("/",auth,async (req, res) => {
       .find({ _id: { $in: user.post_ids } })
       .sort({ time: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .populate("userId", "name profile_url");
 
     const modifiedPosts = posts.map(post => ({
       ...post._doc,

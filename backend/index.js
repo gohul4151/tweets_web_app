@@ -199,6 +199,33 @@ app.post("/post/:id/dislikeoff", auth, async (req, res) => {
 app.use("/getmypost", myPostRoute);
 
 
+app.delete("/deletepost/:id", auth, async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const userId = req.userId;
+
+    const post = await postModel.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    if (post.userId.toString() !== userId) {
+      return res.status(403).json({ message: "Not authorized to delete this post" });
+    }
+
+    await postModel.findByIdAndDelete(postId);
+
+    await userModel.findByIdAndUpdate(userId, {
+      $pull: { post_ids: postId }
+    });
+
+    res.json({ message: "Post deleted successfully" });
+
+  } catch (err) {
+    res.status(500).json({ message: "Failed to delete post" });
+  }
+});
 
 
 app.listen(3000);
