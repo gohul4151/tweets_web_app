@@ -72,12 +72,18 @@ router.post("/", auth, upload.single("file"), async (req, res) => {
         tags:tag   
       });
 
-      const user = await userModel.findOne({
-         _id:req.userId
+      await userModel.findByIdAndUpdate(req.userId, {
+        $push: {
+          post_ids: { $each: [post._id], $position: 0 }
+        }
       });
 
-      user.post_ids.unshift(post._id);
-      await user.save();
+
+      //const user = await userModel.findOne({
+        // _id:req.userId
+      //});
+      //user.post_ids.unshift(post._id);
+      //await user.save();
     }
     catch (e) {
         console.log(e);

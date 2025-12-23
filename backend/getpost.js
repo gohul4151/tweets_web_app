@@ -1,11 +1,11 @@
-const express = require('express');
-const { auth } = require('./auth');
-const { postModel } = require('./db');  
-const { userModel } = require('./db');
+const express = require('express');  
+const { auth } = require('./auth');  
+const { postModel } = require('./db');      
+const { userModel } = require('./db');   
 
 const router = express.Router();
 
-router.get("/",auth, async (req, res) => {
+router.get("/",auth,async (req, res) => { 
     try {
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
@@ -18,7 +18,17 @@ router.get("/",auth, async (req, res) => {
       .limit(limit)
       .populate("userId", "name profile_url");
 
-    res.json({ posts });
+    const modifiedPosts = posts.map(post => {
+      return {
+        ...post._doc,
+        isLiked: post.likes.includes(req.userId),
+        isDisliked: post.dislikes.includes(req.userId),
+        likesCount: post.likes.length,
+        dislikesCount: post.dislikes.length
+      };
+    });
+
+    res.json({ posts: modifiedPosts });
     
   } catch (error) {
     res.status(500).json({

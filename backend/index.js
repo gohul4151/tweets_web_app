@@ -139,8 +139,63 @@ app.post("/login", async function(req,res){
 
 });
 
-app.use("/upload", uploadRoute);
+app.use("/putpost", uploadRoute);
 
-app.use("/post", getpostRoute);
+app.use("/getpost", getpostRoute);
+
+app.post("/post/:id/likeon", auth, async (req, res) => {
+  const userId = req.userId;
+  const postId = req.params.id;
+
+  await postModel.findByIdAndUpdate(postId, {
+    $addToSet: { likes: userId },   // add if not exists
+    $pull: { dislikes: userId }     // remove dislike
+  });
+
+  res.json({ message: "Post liked" });
+});
+
+app.post("/post/:id/likeoff", auth, async (req, res) => {
+  const userId = req.userId;
+  const postId = req.params.id;
+
+  await postModel.findByIdAndUpdate(postId, {
+    $pull: { likes: userId }        // remove like
+  });
+
+  res.json({ message: "Like removed" });
+});
+
+app.post("/post/:id/dislikeon", auth, async (req, res) => {
+  const userId = req.userId;
+  const postId = req.params.id;
+
+  await postModel.findByIdAndUpdate(postId, {
+    $addToSet: { dislikes: userId }, // add if not exists
+    $pull: { likes: userId }         // remove like
+  });
+
+  res.json({ message: "Post disliked" });
+});
+
+app.post("/post/:id/dislikeoff", auth, async (req, res) => {
+  const userId = req.userId;
+  const postId = req.params.id;
+
+  await postModel.findByIdAndUpdate(postId, {
+    $pull: { dislikes: userId }      // remove dislike
+  });
+
+  res.json({ message: "Dislike removed" });
+});
+
+/* await fetch(`/post/${post._id}/likeon`, {
+      method: "POST",
+      credentials: "include"
+    });
+*/
+
+
+
 
 app.listen(3000);
