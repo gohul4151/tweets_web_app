@@ -2,6 +2,7 @@ const express=require('express');
 const bcrypt=require('bcrypt');
 const mongoose=require('mongoose');
 const {userModel}=require('./db');
+const {postModel}=require('./db');
 const jwt = require('jsonwebtoken');
 const cors = require("cors");
 const {z} = require("zod");
@@ -208,10 +209,11 @@ app.get("/mytotalpost", auth, async (req, res) => {
 app.use("/getmypost", myPostRoute);
 
 
-app.delete("/deletepost/:id", auth, async (req, res) => {
+app.delete("/deletepost/:id",auth,async (req, res) => {
   try {
     const postId = req.params.id;
     const userId = req.userId;
+    console.log(postId,userId);
 
     const post = await postModel.findById(postId);
 
