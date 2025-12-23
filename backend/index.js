@@ -6,7 +6,8 @@ const jwt = require('jsonwebtoken');
 const cors = require("cors");
 const {z} = require("zod");
 const {uploadRoute} = require("./upload");
-const {getpostRoute} = require("./getpost");
+const {getpostRoute} = require("./getallpost");
+const {myPostRoute}=require("./getmypost");
 
 
 mongoose.connect("mongodb+srv://dharaneesh1881:Dd%409790361881@cluster0.su0jsfi.mongodb.net/tweet");
@@ -194,6 +195,8 @@ app.post("/post/:id/dislikeoff", auth, async (req, res) => {
       credentials: "include"
     });
 */
+
+app.use("/getmypost", myPostRoute);
 
 
 

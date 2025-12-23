@@ -1,3 +1,4 @@
+
 function timeAgo(dateString) {
   const postTime = new Date(dateString);
   const now = new Date();
@@ -25,4 +26,4 @@ function timeAgo(dateString) {
   return `${years} year${years > 1 ? "s" : ""} ago`;
 }
 
-module.exports = timeAgo;
+module.exports = { timeAgo }

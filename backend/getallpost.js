@@ -2,11 +2,11 @@ const express = require('express');
 const { auth } = require('./auth');  
 const { postModel } = require('./db');      
 const { userModel } = require('./db');   
-const {timeAgo}=require('./timeago');
+const { timeAgo }=require('./timeAgo');
 
 const router = express.Router();
 
-router.get("/",auth,async (req, res) => { 
+router.get("/",async (req, res) => { 
     try {
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
