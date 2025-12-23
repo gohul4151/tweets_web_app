@@ -196,6 +196,15 @@ app.post("/post/:id/dislikeoff", auth, async (req, res) => {
     });
 */
 
+
+app.get("/mytotalpost", auth, async (req, res) => {
+  const user = await userModel.findById(req.userId);
+  res.json({ totalPosts: user.post_ids.length,
+    name:user.name,
+    profile_url:user.profile_url
+   });
+});
+
 app.use("/getmypost", myPostRoute);
 
 
