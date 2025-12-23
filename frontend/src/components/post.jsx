@@ -28,7 +28,6 @@ function Addpost({p1, del, onDelete}) {
                 credentials: 'include'
             });
             const result = await response.json();
-            console.log("response",result);
             if (result) {
                 // Call the onDelete callback if provided
                 if (onDelete) {
@@ -73,7 +72,7 @@ function Addpost({p1, del, onDelete}) {
                                         className="option-item delete-option" 
                                         onClick={handleDelete}
                                     >
-                                        🗑️ Delete Post
+                                        Delete Post
                                     </button>
                                     <button 
                                         className="option-item cancel-option" 
