@@ -4,7 +4,10 @@ import '../post.css';
 function Addpost({p1, del, onDelete}) {
     const [showOptions, setShowOptions] = useState(false);
     const optionsRef = useRef(null);
-    
+    const [like,setlike]=useState(p1.likesCount);
+    const [dislike,setdislike]=useState(p1.dislikesCount);
+    const [isliked,setisliked]=useState(p1.isLiked);
+    const [isdisliked,setisdisliked]=useState(p1.isDisliked);
     // Close menu when clicking outside
     useEffect(() => {
         function handleClickOutside(event) {
@@ -41,7 +44,39 @@ function Addpost({p1, del, onDelete}) {
         }
         setShowOptions(false);
     };
-    
+    async function sentlikeon()
+    {
+        const response = await fetch(`http://localhost:3000/post/${p1._id}/likeon`,{
+            method:'POST',
+            credentials: 'include'
+        });
+        console.log("response :likeon request");
+
+    }
+    async function sentlikeoff()
+    {
+        const response = await fetch(`http://localhost:3000/post/${p1._id}/likeoff`,{
+            method:'POST',
+            credentials: 'include'
+        });
+        console.log("response :likeoff request");
+    }
+    async function sentdislikeon()
+    {
+        const response = await fetch(`http://localhost:3000/post/${p1._id}/dislikeon`,{
+            method:'POST',
+            credentials: 'include'
+        });
+        console.log("response :dislikeon request");
+    }
+    async function sentdislikeoff()
+    {
+        const response = await fetch(`http://localhost:3000/post/${p1._id}/dislikeoff`,{
+            method:'POST',
+            credentials: 'include'
+        });
+        console.log("response :dislikeoff request");
+    }
     return (
         <div className="post-container">
             <div className="post-header">
@@ -115,10 +150,47 @@ function Addpost({p1, del, onDelete}) {
                     <p>{p1.description}</p>
                 </div>
             )}
-            
             <div className="post-stats">
-                <span>Likes: {p1.likesCount}</span>
-                <span>Dislikes: {p1.dislikesCount}</span>
+                <span><div>{like}<div><button onClick={() => {
+                    if (isliked==false) 
+                    {
+                        if (isdisliked==true) 
+                        {
+                            setdislike(c => c - 1);
+                            setisdisliked(false);
+                            sentdislikeoff();
+                        }
+                        setlike(c => c + 1);
+                        setisliked(true);
+                        sentlikeon();
+                    } 
+                    else 
+                    {
+                        setlike(c => c - 1);
+                        setisliked(false);
+                        sentlikeoff();
+                    }
+                    }}>Likes</button></div></div></span>
+                <span><div>{dislike}<div><button onClick={() => {
+                    if (isdisliked==false)
+                    {
+                        if(isliked==true)
+                        {
+                            setlike(c => c-1);
+                            setisliked(false);
+                            sentlikeoff();
+                        }
+                        setdislike(c => c+1);
+                        setisdisliked(true);
+                        sentdislikeon();
+                    }
+                    else
+                    {
+                        setdislike(c => c-1);
+                        setisdisliked(false);
+                        sentdislikeoff();
+                    }
+                    }}>DisLikes</button></div></div></span>
             </div>
         </div>
     );
