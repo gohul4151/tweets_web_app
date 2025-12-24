@@ -9,6 +9,7 @@ const {z} = require("zod");
 const {uploadRoute} = require("./upload");
 const {getpostRoute} = require("./getallpost");
 const {myPostRoute}=require("./getmypost");
+const {uploadprofileRoute}=require("./uploadprofile");
 
 
 mongoose.connect("mongodb+srv://dharaneesh1881:Dd%409790361881@cluster0.su0jsfi.mongodb.net/tweet");
@@ -236,6 +237,101 @@ app.delete("/deletepost/:id",auth,async (req, res) => {
     res.status(500).json({ message: "Failed to delete post" });
   }
 });
+
+
+app.get("/profile", auth, async (req, res) => {
+  const user = await userModel.findById(req.userId).select(
+    "name profile_url"
+  );
+
+  res.json({
+    username: user.name,
+    profile_url: user.profile_url
+  });
+});
+
+app.put("/changeusername", auth, async (req, res) => {
+
+  const requiredbody = z.object({
+    name: z.string().min(3, "Name too short")
+  });
+
+  const parsedDatawithSuccess=requiredbody.safeParse(req.body);
+
+  if(!parsedDatawithSuccess.success){
+      res.status(400).json({
+          message:parsedDatawithSuccess.error.issues.map((e)=>e.message).join(", ")
+      });
+      return ;
+  }
+
+  const updateData = {};
+  let error=false;
+  try {
+    if (req.body.name) {
+      updateData.name = req.body.name;
+      await userModel.findByIdAndUpdate(req.userId, updateData);
+    }
+  } catch (e) {
+    let error=true;
+    res.status(400).json({
+      message: "user name already exists"
+    });
+    return;
+  }
+
+  if(!error){
+    res.json({ message: "Profile updated successfully",
+      name: updateData.name
+    });
+  }
+});
+
+app.put("/verifyoldpassword", auth, async (req, res) => {
+  
+  const user = await userModel.findById(req.userId).select(
+    "password"
+  );
+
+  const passwordMatch = await bcrypt.compare(req.body.oldpassword,user.password);
+
+  if(!passwordMatch){
+    res.status(403).json({
+        message:"incorrect current password"
+    });
+    return ;
+  } 
+  else{
+    res.json({ message: "Password matched" });
+  }
+});
+
+app.put("/updatepassword", auth, async (req, res) => {
+  const requiredbody = z.object({
+    password: z.string().min(6, "Password must be 6 characters")
+  });
+
+  const parsedDatawithSuccess=requiredbody.safeParse(req.body);
+
+  if(!parsedDatawithSuccess.success){
+      res.status(400).json({
+          message:parsedDatawithSuccess.error.issues.map((e)=>e.message).join(", ")
+      });
+      return ;
+  }
+
+  const updateData = {};
+  if (req.body.password) {
+    updateData.password = await bcrypt.hash(req.body.password, 5);
+  }
+
+  await userModel.findByIdAndUpdate(req.userId, updateData);
+  res.json({ message: "Password updated successfully" });
+});
+
+app.use("/updateprofilepicture", uploadprofileRoute);
+
+
 
 
 app.listen(3000);

@@ -1,0 +1,50 @@
+const express = require("express");
+const router = express.Router();
+const multer = require("multer");
+const cloudinary = require("./cloudinary");
+const { auth } = require("./auth");
+const { userModel } = require("./db");
+const upload = require("./upload");
+
+const storage = multer.memoryStorage();
+const uploadprofile = multer({
+  storage,
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB
+});
+
+
+router.post("/",auth, uploadprofile.single("file") ,async (req, res) => {
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const uploadResult = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        {
+          folder: "profile_pics",
+          transformation: [
+            { width: 300, height: 300, crop: "fill" },
+            { quality: "auto", fetch_format: "auto" }
+          ]
+        },
+        (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        }
+      ).end(req.file.buffer);
+    });
+
+    await userModel.findByIdAndUpdate(req.userId, {
+      profile_url: uploadResult.secure_url
+    });
+
+    console.log(uploadResult);
+
+    res.json({
+      message: "Profile picture updated",
+      profile_url: uploadResult.secure_url
+    });
+  }
+);
+module.exports = {uploadprofileRoute : router};
