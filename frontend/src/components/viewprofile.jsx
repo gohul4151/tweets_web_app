@@ -56,7 +56,7 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
             // API call here
             const response=await fetch(`http://localhost:3000/changeusername"`,{
                 method:`PUT`,
-                body:newPassword
+                body:newUsername
             })
             const data =await response.json();
             if (data.message=="Name too short" || data.message=="user name already exists")
