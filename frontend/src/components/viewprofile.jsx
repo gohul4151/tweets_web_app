@@ -42,8 +42,11 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
             // API call here
             const response=await fetch(`http://localhost:3000/updateprofilepicture`,{
                 method:`PUT`,
+                credentials: "include",
                 body:data
             })
+            const data1 = await response.json();
+            alert(data1.message);
             console.log("Updating profile image...");
             closeAllModals();
             setrefpost(c => c+1);
@@ -56,7 +59,8 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
             // API call here
             const response=await fetch(`http://localhost:3000/changeusername`,{
                 method:"PUT",
-                body:JSON.stringify({ newUsername: newUsername })
+                credentials: "include",
+                body:JSON.stringify({ name: newUsername })
             })
             const data =await response.json();
             if (data.message=="Name too short" || data.message=="user name already exists")
@@ -79,6 +83,7 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
             // API call here
             const response=await fetch(`http://loaclhost:3000/changepassword"`,{
                 method:"PUT",
+                credentials: "include",
                 body:JSON.stringify({currentPassword,newPassword})
             })
             const data =await response.json();
