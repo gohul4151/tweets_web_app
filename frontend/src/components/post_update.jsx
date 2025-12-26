@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function Addpostupdate({des, ti, tag, file, setclose,addpost}) {
+function Addpostupdate({des, ti, tag, file,setclose,addpost}) {
     const [lod, setlod] = useState(false);
     const [message, setMessage] = useState("");
     
