@@ -13,7 +13,7 @@ const uploadprofile = multer({
 });
 
 
-router.post("/",auth, uploadprofile.single("file") ,async (req, res) => {
+router.put("/",auth, uploadprofile.single("profileurl") ,async (req, res) => {
 
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });

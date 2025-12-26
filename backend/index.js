@@ -287,28 +287,23 @@ app.put("/changeusername", auth, async (req, res) => {
   }
 });
 
-app.put("/verifyoldpassword", auth, async (req, res) => {
+app.put("/changepassword", auth, async (req, res) => {
   
   const user = await userModel.findById(req.userId).select(
     "password"
   );
 
-  const passwordMatch = await bcrypt.compare(req.body.oldpassword,user.password);
+  const passwordMatch = await bcrypt.compare(req.body.currentPassword,user.password);
 
   if(!passwordMatch){
     res.status(403).json({
-        message:"incorrect current password"
+        message:"incorrect oldcurrent password"
     });
     return ;
   } 
-  else{
-    res.json({ message: "Password matched" });
-  }
-});
 
-app.put("/updatepassword", auth, async (req, res) => {
   const requiredbody = z.object({
-    password: z.string().min(6, "Password must be 6 characters")
+    newPassword: z.string().min(6, "Password must be 6 characters")
   });
 
   const parsedDatawithSuccess=requiredbody.safeParse(req.body);
@@ -321,8 +316,8 @@ app.put("/updatepassword", auth, async (req, res) => {
   }
 
   const updateData = {};
-  if (req.body.password) {
-    updateData.password = await bcrypt.hash(req.body.password, 5);
+  if (req.body.newPassword) {
+    updateData.password = await bcrypt.hash(req.body.newPassword, 5);
   }
 
   await userModel.findByIdAndUpdate(req.userId, updateData);

@@ -26,4 +26,5 @@ function timeAgo(dateString) {
   return `${years} year${years > 1 ? "s" : ""} ago`;
 }
 
-module.exports = { timeAgo }
+module.exports = { timeAgo };
+
