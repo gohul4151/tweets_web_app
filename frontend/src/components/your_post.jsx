@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import Addpost from "./post";
 
-function YourPost({ you_post, setyou }) {
+function YourPost({ you_post, setyou,setrefpost }) {
     const [pos, setpos] = useState([]);
     const [totalPosts, setTotalPosts] = useState(0);
     const [page, setPage] = useState(1);
@@ -94,6 +94,7 @@ function YourPost({ you_post, setyou }) {
     };
     
     const handleBackClick = () => {
+        setrefpost(c => c+1);
         setyou(false);
     };
 

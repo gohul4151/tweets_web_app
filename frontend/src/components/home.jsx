@@ -9,13 +9,12 @@ function Home({setlog})
 {
     const [p1,setp1]=useState([]);
     const [close,setclose]=useState(false);
-    const [p_c,setp_c]=useState(false);
     const [you_post,setyou]=useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [refpost,setrefpost]=useState(0);
-    
+    const [showProfileModal, setShowProfileModal] = useState(false);
     const fetchPosts = async (page = 1) => {
         setIsLoading(true);
         try {
@@ -89,14 +88,14 @@ function Home({setlog})
         setp1([]);
         setCurrentPage(1);
         setHasMore(true);
-    }, []);
+    }, [refpost]);
 
     const addpost = () => {
         setrefpost(prev => prev + 1);
     };
 
     if (you_post) {
-        return <YourPost you_post={you_post} setyou={setyou}/>
+        return <YourPost you_post={you_post} setyou={setyou} setrefpost={setrefpost}/>
     }
     
     return (
@@ -127,13 +126,13 @@ function Home({setlog})
             
             <div style={{ position: 'fixed', bottom: '20px', right: '20px', display: 'flex', gap: '10px' }}>
                 <button onClick={() => setclose(true)}>+</button>
-                <button onClick={() => setp_c(true)}>your profile</button>
+                <button onClick={() => setShowProfileModal(true)}>Edit Profile</button>
                 <button onClick={() => setyou(true)}>your post</button>
                 <button onClick={() => setlog(false)}>logout</button>
             </div>
             
             {close && <Post close={close} setclose={setclose} addpost={addpost}/>}
-            {p_c && <Profile p_c={p_c} setp_c={setp_c}/>}
+            {showProfileModal && <Profile showProfileModal={showProfileModal} setShowProfileModal={setShowProfileModal} setrefpost={setrefpost}/>}
         </div>
     );
 }
