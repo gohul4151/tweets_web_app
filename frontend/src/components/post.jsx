@@ -8,6 +8,9 @@ function Addpost({p1, del, onDelete}) {
     const [dislike,setdislike]=useState(p1.dislikesCount);
     const [isliked,setisliked]=useState(p1.isLiked);
     const [isdisliked,setisdisliked]=useState(p1.isDisliked);
+    const [read,setread]=useState(false);
+    const maxread=150;
+    const isLongDescription = p1.description && p1.description.length > maxread;
     // Close menu when clicking outside
     useEffect(() => {
         function handleClickOutside(event) {
@@ -147,7 +150,20 @@ function Addpost({p1, del, onDelete}) {
             
             {p1.description && (
                 <div className="post-description">
-                    <p>{p1.description}</p>
+                    <p>
+                        {read || !isLongDescription 
+                            ? p1.description 
+                            : `${p1.description.substring(0, maxLength)}...`
+                        }
+                        {isLongDescription && (
+                            <button 
+                                className="read-more-btn"
+                                onClick={() => setread(!read)}
+                            >
+                                {read ? 'Show Less' : 'Read More'}
+                            </button>
+                        )}
+                    </p>
                 </div>
             )}
             <div className="post-stats">
