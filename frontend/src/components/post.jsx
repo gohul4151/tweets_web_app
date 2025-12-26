@@ -152,8 +152,7 @@ function Addpost({p1, del, onDelete}) {
                 <div className="post-description">
                     <p>
                         {read || !isLongDescription 
-                            ? p1.description 
-                            : `${p1.description.substring(0, maxLength)}...`
+                            ? p1.description : `${p1.description.substring(0, maxread)}...`
                         }
                         {isLongDescription && (
                             <button 
