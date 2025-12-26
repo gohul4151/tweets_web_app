@@ -1,13 +1,15 @@
 import { useState, useRef } from 'react';
 import '../modal.css';
 
-function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
+function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
     const [activeModal, setActiveModal] = useState(null); // 'image', 'username', 'password'
     const [newUsername, setNewUsername] = useState('');
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const fileInputRef = useRef(null);
-    const [msg,setmsg]=useState(null);
+    const [msg, setmsg] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    
     // Open specific modal
     const openModal = (modalType) => {
         setActiveModal(modalType);
@@ -20,6 +22,7 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
         setCurrentPassword('');
         setNewPassword('');
         setShowProfileModal(false);
+        setIsLoading(false);
     };
     
     // Handle file upload
@@ -28,7 +31,6 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
         if (file) {
             const data = new FormData();
             data.append("profile", file);
-            // Upload logic here
             console.log("Selected file:", file.name);
         }
     };
@@ -36,68 +38,91 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
     // Handle profile image update
     const updateProfileImage = async () => {
         if (fileInputRef.current?.files[0]) {
-            const file = fileInputRef.current.files[0];
-            const data = new FormData();
-            data.append("profileurl", file);
-            // API call here
-            const response=await fetch(`http://localhost:3000/updateprofilepicture`,{
-                method:`PUT`,
-                credentials: "include",
-                body:data
-            })
-            const data1 = await response.json();
-            alert(data1.message);
-            console.log("Updating profile image...");
-            closeAllModals();
-            setrefpost(c => c+1);
+            setIsLoading(true);
+            try {
+                const file = fileInputRef.current.files[0];
+                const data = new FormData();
+                data.append("profileurl", file);
+                
+                const response = await fetch(`http://localhost:3000/updateprofilepicture`, {
+                    method: `PUT`,
+                    credentials: "include",
+                    body: data
+                });
+                const data1 = await response.json();
+                alert(data1.message);
+                console.log("Updating profile image...");
+                closeAllModals();
+                setrefpost(c => c + 1);
+            } catch (error) {
+                console.error("Error updating profile image:", error);
+                alert("Failed to update profile image");
+                setIsLoading(false);
+            }
         }
     };
     
     // Handle username update
     const updateUsername = async () => {
         if (newUsername.trim()) {
-            // API call here
-            const response=await fetch(`http://localhost:3000/changeusername`,{
-                method:"PUT",
-                credentials: "include",
-                body:JSON.stringify({ name: newUsername })
-            })
-            const data =await response.json();
-            if (data.message=="Name too short" || data.message=="user name already exists")
-            {
-                setmsg(data.message);
+            setIsLoading(true);
+            try {
+                const response = await fetch(`http://localhost:3000/changeusername`, {
+                    method: "PUT",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({ name: newUsername })
+                });
+                const data = await response.json();
+                
+                if (data.message == "Name too short" || data.message == "user name already exists") {
+                    setmsg(data.message);
+                    setIsLoading(false);
+                } else {
+                    alert(data.message);
+                    console.log("Updating username to:", newUsername);
+                    closeAllModals();
+                    setrefpost(c => c + 1);
+                }
+            } catch (error) {
+                console.error("Error updating username:", error);
+                alert("Failed to update username");
+                setIsLoading(false);
             }
-            else
-            {
-                alert(data.message);
-            }
-            console.log("Updating username to:", newUsername);
-            closeAllModals();
-            setrefpost(c => c+1);
         }
     };
     
     // Handle password update
     const updatePassword = async () => {
         if (currentPassword && newPassword) {
-            // API call here
-            const response=await fetch(`http://loaclhost:3000/changepassword"`,{
-                method:"PUT",
-                credentials: "include",
-                body:JSON.stringify({currentPassword,newPassword})
-            })
-            const data =await response.json();
-            if (data.message=="incorrect oldcurrent password")
-            {
-                setmsg(data.message);
+            setIsLoading(true);
+            try {
+                const response = await fetch(`http://localhost:3000/changepassword`, {
+                    method: "PUT",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+                const data = await response.json();
+                
+                if (data.message == "incorrect oldcurrent password") {
+                    setmsg(data.message);
+                    setIsLoading(false);
+                } else {
+                    alert(data.message);
+                    console.log("Updating password...");
+                    closeAllModals();
+                    setrefpost(c => c + 1);
+                }
+            } catch (error) {
+                console.error("Error updating password:", error);
+                alert("Failed to update password");
+                setIsLoading(false);
             }
-            else
-            {
-                alert(data.message);
-            }
-            console.log("Updating password...");
-            closeAllModals();
-            setrefpost(c => c+1);
         }
     };
     
@@ -106,16 +131,23 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
         return null;
     }
     
-
     // Main Profile Modal - always shown when showProfileModal is true
     return (
         <div className="profile-modal-overlay">
             <div className="profile-modal-content">
+                {/* Loading Overlay - separate div with higher z-index */}
+                {isLoading && (
+                    <div className="loading-overlay">
+                        <div className="loading-spinner"></div>
+                        <p>Updating...</p>
+                    </div>
+                )}
+                
                 {/* Profile Image Update Modal */}
                 {activeModal === 'image' && (
                     <>
                         <div className="postclose">
-                            <button onClick={() => setActiveModal(null)}>✕</button>
+                            <button onClick={() => setActiveModal(null)} disabled={isLoading}>✕</button>
                         </div>
                         
                         <div className="posttitle">
@@ -127,8 +159,9 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
                                     onChange={handleFileSelect}
                                     accept="image/*"
                                     style={{ display: 'none' }}
+                                    disabled={isLoading}
                                 />
-                                <button onClick={() => fileInputRef.current.click()}>
+                                <button onClick={() => fileInputRef.current.click()} disabled={isLoading}>
                                     Choose Image
                                 </button>
                                 <p style={{ fontSize: '12px', color: '#666', textAlign: 'center', marginTop: '10px' }}>
@@ -138,8 +171,10 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
                         </div>
                         
                         <div className="postbuttons">
-                            <button onClick={() => setActiveModal(null)}>Cancel</button>
-                            <button onClick={updateProfileImage}>Update Picture</button>
+                            <button onClick={() => setActiveModal(null)} disabled={isLoading}>Cancel</button>
+                            <button onClick={updateProfileImage} disabled={isLoading}>
+                                {isLoading ? 'Updating...' : 'Update Picture'}
+                            </button>
                         </div>
                     </>
                 )}
@@ -148,7 +183,7 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
                 {activeModal === 'username' && (
                     <>
                         <div className="postclose">
-                            <button onClick={() => setActiveModal(null)}>✕</button>
+                            <button onClick={() => setActiveModal(null)} disabled={isLoading}>✕</button>
                         </div>
                         
                         <div className="postbody">
@@ -158,14 +193,17 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
                                 placeholder="Enter new username"
                                 value={newUsername}
                                 onChange={(e) => setNewUsername(e.target.value)}
+                                disabled={isLoading}
                             />
                             <div>{msg}</div>
                             <div className="error-msg-user"></div>
                         </div>
                         
                         <div className="postbuttons">
-                            <button onClick={() => setActiveModal(null)}>Cancel</button>
-                            <button onClick={updateUsername}>Update Username</button>
+                            <button onClick={() => setActiveModal(null)} disabled={isLoading}>Cancel</button>
+                            <button onClick={updateUsername} disabled={isLoading}>
+                                {isLoading ? 'Updating...' : 'Update Username'}
+                            </button>
                         </div>
                     </>
                 )}
@@ -174,7 +212,7 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
                 {activeModal === 'password' && (
                     <>
                         <div className="postclose">
-                            <button onClick={() => setActiveModal(null)}>✕</button>
+                            <button onClick={() => setActiveModal(null)} disabled={isLoading}>✕</button>
                         </div>
                         
                         <div className="posttag">
@@ -184,6 +222,7 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
                                 placeholder="Enter current password"
                                 value={currentPassword}
                                 onChange={(e) => setCurrentPassword(e.target.value)}
+                                disabled={isLoading}
                             />
                             <div>{msg}</div>
                             <div className="error-msg-password"></div>
@@ -196,12 +235,15 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
                                 placeholder="Enter new password"
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
+                                disabled={isLoading}
                             />
                             <div className="error-msg-password"></div>
                         </div>
                         <div className="postbuttons">
-                            <button onClick={() => setActiveModal(null)}>Cancel</button>
-                            <button onClick={updatePassword}>Update Password</button>
+                            <button onClick={() => setActiveModal(null)} disabled={isLoading}>Cancel</button>
+                            <button onClick={updatePassword} disabled={isLoading}>
+                                {isLoading ? 'Updating...' : 'Update Password'}
+                            </button>
                         </div>
                     </>
                 )}
@@ -210,7 +252,7 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
                 {!activeModal && (
                     <>
                         <div className="postclose">
-                            <button onClick={closeAllModals}>✕</button>
+                            <button onClick={closeAllModals} disabled={isLoading}>✕</button>
                         </div>
                         
                         <div className="profile-menu">
@@ -222,6 +264,7 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
                                 <button 
                                     className="profile-option-btn"
                                     onClick={() => openModal('image')}
+                                    disabled={isLoading}
                                 >
                                     <div className="option-icon">📷</div>
                                     <div className="option-text">
@@ -234,6 +277,7 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
                                 <button 
                                     className="profile-option-btn"
                                     onClick={() => openModal('username')}
+                                    disabled={isLoading}
                                 >
                                     <div className="option-icon">👤</div>
                                     <div className="option-text">
@@ -246,6 +290,7 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
                                 <button 
                                     className="profile-option-btn"
                                     onClick={() => openModal('password')}
+                                    disabled={isLoading}
                                 >
                                     <div className="option-icon">🔒</div>
                                     <div className="option-text">
@@ -257,7 +302,7 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
                             </div>
                             
                             <div className="postbuttons">
-                                <button onClick={closeAllModals}>Close</button>
+                                <button onClick={closeAllModals} disabled={isLoading}>Close</button>
                             </div>
                         </div>
                     </>
