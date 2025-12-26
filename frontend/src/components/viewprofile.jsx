@@ -54,9 +54,9 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
     const updateUsername = async () => {
         if (newUsername.trim()) {
             // API call here
-            const response=await fetch(`http://localhost:3000/changeusername"`,{
-                method:`PUT`,
-                body:newUsername
+            const response=await fetch(`http://localhost:3000/changeusername`,{
+                method:"PUT",
+                body:JSON.stringify({ newUsername: newUsername })
             })
             const data =await response.json();
             if (data.message=="Name too short" || data.message=="user name already exists")
@@ -156,9 +156,6 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
                             />
                             <div>{msg}</div>
                             <div className="error-msg-user"></div>
-                            <p style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
-                                <div>{msg}</div>
-                            </p>
                         </div>
                         
                         <div className="postbuttons">
@@ -196,8 +193,6 @@ function Profile({ showProfileModal, setShowProfileModal,setrefpost }) {
                                 onChange={(e) => setNewPassword(e.target.value)}
                             />
                             <div className="error-msg-password"></div>
-                            <p style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
-                            </p>
                         </div>
                         <div className="postbuttons">
                             <button onClick={() => setActiveModal(null)}>Cancel</button>
