@@ -253,7 +253,7 @@ app.get("/profile", auth, async (req, res) => {
 app.put("/changeusername", auth, async (req, res) => {
 
   const requiredbody = z.object({
-    newUsername: z.string().min(3, "Name too short")
+    name: z.string().min(3, "Name too short")
   });
 
   const parsedDatawithSuccess=requiredbody.safeParse(req.body);
@@ -268,8 +268,8 @@ app.put("/changeusername", auth, async (req, res) => {
   const updateData = {};
   let error=false;
   try {
-    if (req.body.newUsername) {
-      updateData.name = req.body.newUsername;
+    if (req.body.name) {
+      updateData.name = req.body.name;
       await userModel.findByIdAndUpdate(req.userId, updateData);
     }
   } catch (e) {
