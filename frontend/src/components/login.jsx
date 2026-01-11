@@ -1,8 +1,8 @@
 import { Children, useRef } from "react";
 import { useState } from "react";
-import Home from "./home";
 function Login({setlog})
 {
+
     const inputemail=useRef(null);
     const inputpass=useRef(null);
     const [d1, setd1]=useState("");

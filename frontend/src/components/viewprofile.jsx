@@ -1,5 +1,8 @@
 import { useState, useRef } from 'react';
 import '../modal.css';
+import { CircleUser } from 'lucide-react';
+import { UserPen } from 'lucide-react';
+import { LockKeyhole } from 'lucide-react';
 
 function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
     const [activeModal, setActiveModal] = useState(null); // 'image', 'username', 'password'
@@ -266,7 +269,7 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
                                     onClick={() => openModal('image')}
                                     disabled={isLoading}
                                 >
-                                    <div className="option-icon">📷</div>
+                                    <div className="option-icon"><CircleUser /></div>
                                     <div className="option-text">
                                         <h3>Change Profile Image</h3>
                                         <p>Upload a new profile picture</p>
@@ -279,7 +282,7 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
                                     onClick={() => openModal('username')}
                                     disabled={isLoading}
                                 >
-                                    <div className="option-icon">👤</div>
+                                    <div className="option-icon"><UserPen /></div>
                                     <div className="option-text">
                                         <h3>Change Username</h3>
                                         <p>Update your display name</p>
@@ -292,7 +295,7 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
                                     onClick={() => openModal('password')}
                                     disabled={isLoading}
                                 >
-                                    <div className="option-icon">🔒</div>
+                                    <div className="option-icon"><LockKeyhole /></div>
                                     <div className="option-text">
                                         <h3>Change Password</h3>
                                         <p>Set a new password</p>

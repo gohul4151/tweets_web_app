@@ -1,16 +1,22 @@
-import {useState, useEffect, useRef} from 'react';
+import { useState, useEffect, useRef } from 'react';
 import '../post.css';
+import { ArrowBigUp } from 'lucide-react';
+import { ArrowBigDown } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
+import { Send } from 'lucide-react';
 
-function Addpost({p1, del, onDelete}) {
+function Addpost({ p1, del, onDelete }) {
     const [showOptions, setShowOptions] = useState(false);
     const optionsRef = useRef(null);
-    const [like,setlike]=useState(p1.likesCount);
-    const [dislike,setdislike]=useState(p1.dislikesCount);
-    const [isliked,setisliked]=useState(p1.isLiked);
-    const [isdisliked,setisdisliked]=useState(p1.isDisliked);
-    const [read,setread]=useState(false);
-    const maxread=150;
+    const [like, setlike] = useState(p1.likesCount);
+    const [dislike, setdislike] = useState(p1.dislikesCount);
+    const [isliked, setisliked] = useState(p1.isLiked);
+    const [isdisliked, setisdisliked] = useState(p1.isDisliked);
+    const [read, setread] = useState(false);
+    const [tag,settag]=useState(p1.tags);
+    const maxread = 150;
     const isLongDescription = p1.description && p1.description.length > maxread;
+
     // Close menu when clicking outside
     useEffect(() => {
         function handleClickOutside(event) {
@@ -18,7 +24,7 @@ function Addpost({p1, del, onDelete}) {
                 setShowOptions(false);
             }
         }
-        
+
         if (showOptions) {
             document.addEventListener('mousedown', handleClickOutside);
             return () => {
@@ -26,7 +32,7 @@ function Addpost({p1, del, onDelete}) {
             };
         }
     }, [showOptions]);
-    
+
     const handleDelete = async () => {
         try {
             const response = await fetch(`http://localhost:3000/deletepost/${p1._id}`, {
@@ -47,73 +53,73 @@ function Addpost({p1, del, onDelete}) {
         }
         setShowOptions(false);
     };
-    async function sentlikeon()
-    {
-        const response = await fetch(`http://localhost:3000/post/${p1._id}/likeon`,{
-            method:'POST',
+
+    async function sentlikeon() {
+        const response = await fetch(`http://localhost:3000/post/${p1._id}/likeon`, {
+            method: 'POST',
             credentials: 'include'
         });
         console.log("response :likeon request");
-
     }
-    async function sentlikeoff()
-    {
-        const response = await fetch(`http://localhost:3000/post/${p1._id}/likeoff`,{
-            method:'POST',
+
+    async function sentlikeoff() {
+        const response = await fetch(`http://localhost:3000/post/${p1._id}/likeoff`, {
+            method: 'POST',
             credentials: 'include'
         });
         console.log("response :likeoff request");
     }
-    async function sentdislikeon()
-    {
-        const response = await fetch(`http://localhost:3000/post/${p1._id}/dislikeon`,{
-            method:'POST',
+
+    async function sentdislikeon() {
+        const response = await fetch(`http://localhost:3000/post/${p1._id}/dislikeon`, {
+            method: 'POST',
             credentials: 'include'
         });
         console.log("response :dislikeon request");
     }
-    async function sentdislikeoff()
-    {
-        const response = await fetch(`http://localhost:3000/post/${p1._id}/dislikeoff`,{
-            method:'POST',
+
+    async function sentdislikeoff() {
+        const response = await fetch(`http://localhost:3000/post/${p1._id}/dislikeoff`, {
+            method: 'POST',
             credentials: 'include'
         });
         console.log("response :dislikeoff request");
     }
+
     return (
         <div className="post-container">
             <div className="post-header">
-                <img 
+                <img
                     src={p1.userId?.profile_url}
-                    alt="profile" 
+                    alt="profile"
                     className="profile-pic"
                 />
                 <span className="username">{p1.userId?.name}</span>
                 {p1.timeAgo && <div>{p1.timeAgo}</div>}
-                
+
                 {/* Three-dot options menu - only show if del prop is true */}
                 {del && (
                     <div className="post-options" ref={optionsRef}>
-                        <button 
+                        <button
                             className="options-button"
                             onClick={() => setShowOptions(!showOptions)}
                             title="More options"
                         >
                             ⋮
                         </button>
-                        
+
                         {showOptions && (
                             <>
                                 <div className="options-overlay"></div>
                                 <div className="options-menu">
-                                    <button 
-                                        className="option-item delete-option" 
+                                    <button
+                                        className="option-item delete-option"
                                         onClick={handleDelete}
                                     >
                                         Delete Post
                                     </button>
-                                    <button 
-                                        className="option-item cancel-option" 
+                                    <button
+                                        className="option-item cancel-option"
                                         onClick={() => setShowOptions(false)}
                                     >
                                         Cancel
@@ -124,38 +130,38 @@ function Addpost({p1, del, onDelete}) {
                     </div>
                 )}
             </div>
-            
+
             {p1.title && (
                 <div className="post-title">
                     <h3>{p1.title}</h3>
                 </div>
             )}
-            
+
             <div className="post-media">
                 {p1.type === "image" && (
-                    <img 
+                    <img
                         src={p1.url}
-                        alt="post" 
+                        alt="post"
                         className="post-image"
                     />
                 )}
                 {p1.type === "video" && (
-                    <video 
+                    <video
                         src={p1.url}
-                        controls 
+                        controls
                         className="post-video"
                     />
                 )}
             </div>
-            
+
             {p1.description && (
                 <div className="post-description">
                     <p>
-                        {read || !isLongDescription 
+                        {read || !isLongDescription
                             ? p1.description : `${p1.description.substring(0, maxread)}...`
                         }
                         {isLongDescription && (
-                            <button 
+                            <button
                                 className="read-more-btn"
                                 onClick={() => setread(!read)}
                             >
@@ -163,14 +169,16 @@ function Addpost({p1, del, onDelete}) {
                             </button>
                         )}
                     </p>
+                    <div>
+                        {tag}
+                    </div>
                 </div>
             )}
+
             <div className="post-stats">
-                <span><div>{like}<div><button onClick={() => {
-                    if (isliked==false) 
-                    {
-                        if (isdisliked==true) 
-                        {
+                <span><div><button onClick={() => {
+                    if (isliked == false) {
+                        if (isdisliked == true) {
                             setdislike(c => c - 1);
                             setisdisliked(false);
                             sentdislikeoff();
@@ -178,34 +186,41 @@ function Addpost({p1, del, onDelete}) {
                         setlike(c => c + 1);
                         setisliked(true);
                         sentlikeon();
-                    } 
-                    else 
-                    {
+                    }
+                    else {
                         setlike(c => c - 1);
                         setisliked(false);
                         sentlikeoff();
                     }
-                    }}>Likes</button></div></div></span>
-                <span><div>{dislike}<div><button onClick={() => {
-                    if (isdisliked==false)
-                    {
-                        if(isliked==true)
-                        {
-                            setlike(c => c-1);
+                }}><ArrowBigUp /></button><div>{like}</div></div></span>
+                <span><div><button onClick={() => {
+                    if (isdisliked == false) {
+                        if (isliked == true) {
+                            setlike(c => c - 1);
                             setisliked(false);
                             sentlikeoff();
                         }
-                        setdislike(c => c+1);
+                        setdislike(c => c + 1);
                         setisdisliked(true);
                         sentdislikeon();
                     }
-                    else
-                    {
-                        setdislike(c => c-1);
+                    else {
+                        setdislike(c => c - 1);
                         setisdisliked(false);
                         sentdislikeoff();
                     }
-                    }}>DisLikes</button></div></div></span>
+                }}><ArrowBigDown /></button><div>{dislike}</div></div></span>
+                <div>
+                    <button>
+                        <MessageCircle />
+                    </button>
+                    <div>count</div>
+                </div>
+                <div>
+                    <button>
+                        <Send />
+                    </button>
+                </div>
             </div>
         </div>
     );

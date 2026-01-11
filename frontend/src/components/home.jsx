@@ -4,9 +4,30 @@ import '../modal.css';
 import Profile from "./viewprofile";
 import YourPost from "./your_post";
 import Addpost from "./post";
+import { Sun } from 'lucide-react';
+import { Moon } from 'lucide-react';
+import { UserCog } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import { SquareUser } from 'lucide-react';
+import { House } from 'lucide-react';
+import { LogOut } from 'lucide-react';
+
 
 function Home({setlog})
 {
+    const [theme,settheme]=useState('light');
+    function Theme()
+    {
+        if (theme=='light')
+        {
+            settheme('dark');
+        }
+        else
+        {
+            settheme('light');
+        }
+    }
+    const [home,sethome]=useState(true);
     const [p1,setp1]=useState([]);
     const [close,setclose]=useState(false);
     const [you_post,setyou]=useState(false);
@@ -98,7 +119,12 @@ function Home({setlog})
         return <YourPost you_post={you_post} setyou={setyou} setrefpost={setrefpost}/>
     }
     
-    return (
+    return <>
+        <div>
+            <button onClick={Theme}>
+                {theme=='light' ? <Sun /> : <Moon />}
+            </button>
+        </div>
         <div>
             <div>
                 {p1.length > 0 ? (
@@ -125,16 +151,17 @@ function Home({setlog})
             </div>
             
             <div style={{ position: 'fixed', bottom: '20px', right: '20px', display: 'flex', gap: '10px' }}>
-                <button onClick={() => setclose(true)}>+</button>
-                <button onClick={() => setShowProfileModal(true)}>Edit Profile</button>
-                <button onClick={() => setyou(true)}>your post</button>
-                <button onClick={() => setlog(false)}>logout</button>
+                <button onclick={() =>sethome(true)}><House /></button>
+                <button onClick={() => setclose(true)}><Plus /></button>
+                <button onClick={() => setShowProfileModal(true)}>Edit Profile  <UserCog /></button>
+                <button onClick={() => {setyou(true); sethome(false);}}>My post <SquareUser /></button>
+                <button onClick={() => setlog(false)}>logou <LogOut /></button>
             </div>
             
             {close && <Post close={close} setclose={setclose} addpost={addpost}/>}
             {showProfileModal && <Profile showProfileModal={showProfileModal} setShowProfileModal={setShowProfileModal} setrefpost={setrefpost}/>}
         </div>
-    );
+    </>;
 }
 
 function Post({close,setclose,addpost}){

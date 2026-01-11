@@ -17,13 +17,13 @@ function Addpostupdate({des, ti, tag, file,setclose,addpost}) {
             // Get values from refs
             const title = ti?.current?.value || "";
             const description = des?.current?.value || "";
-            const tagValue = tag?.current?.value || "";
+            const tag = tag?.current?.value || "";
             
             const formData = new FormData();
             formData.append("file", file);
             formData.append("title", title);
             formData.append("description", description);
-            formData.append("tag", tagValue);
+            formData.append("tag", tag);
             
             const response = await fetch("http://localhost:3000/putpost", {
                 method: "POST",
