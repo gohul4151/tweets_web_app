@@ -22,7 +22,7 @@ function App() {
   const [log, setlog] = useState(false);
   if (log) {
     return <>
-      <Home setlog={setlog}/>
+      <Home setlog={setlog} settheme={settheme} theme={theme}/>
     </>
   }
   return <>

@@ -13,9 +13,8 @@ import { House } from 'lucide-react';
 import { LogOut } from 'lucide-react';
 
 
-function Home({setlog})
+function Home({setlog,settheme,theme})
 {
-    const [theme,settheme]=useState('light');
     function Theme()
     {
         if (theme=='light')
