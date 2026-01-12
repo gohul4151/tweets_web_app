@@ -4,6 +4,7 @@ import { ArrowBigUp } from 'lucide-react';
 import { ArrowBigDown } from 'lucide-react';
 import { MessageCircle } from 'lucide-react';
 import { Send } from 'lucide-react';
+import Command from './command.jsx';
 
 function Addpost({ p1, del, onDelete }) {
     const [showOptions, setShowOptions] = useState(false);
@@ -85,6 +86,10 @@ function Addpost({ p1, del, onDelete }) {
         });
         console.log("response :dislikeoff request");
     }
+
+
+
+
 
     return (
         <div className="post-container">
@@ -212,7 +217,7 @@ function Addpost({ p1, del, onDelete }) {
                 }}><ArrowBigDown /></button><div>{dislike}</div></div></span>
                 <div>
                     <button>
-                        <MessageCircle />
+                        <MessageCircle onClick={Command} />
                     </button>
                     <div>count</div>
                 </div>
@@ -221,6 +226,12 @@ function Addpost({ p1, del, onDelete }) {
                         <Send />
                     </button>
                 </div>
+            </div>
+            <div>
+                <div>
+                    {/* Render comments here in future */}
+                </div>
+                <Command />
             </div>
         </div>
     );
