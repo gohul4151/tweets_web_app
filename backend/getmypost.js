@@ -6,8 +6,6 @@ const { timeAgo }=require('./timeAgo');
 
 const router = express.Router();
 
-
-
 router.get("/",auth,async (req, res) => {
   try {
     const user = await userModel.findById(req.userId);

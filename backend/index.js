@@ -3,13 +3,15 @@ const bcrypt=require('bcrypt');
 const mongoose=require('mongoose');
 const {userModel}=require('./db');
 const {postModel}=require('./db');
+const {commentModel}=require('./db');
 const jwt = require('jsonwebtoken');
 const cors = require("cors");
-const {z} = require("zod");
+const {z, success} = require("zod");
 const {uploadRoute} = require("./upload");
 const {getpostRoute} = require("./getallpost");
 const {myPostRoute}=require("./getmypost");
 const {uploadprofileRoute}=require("./uploadprofile");
+const {commentRoute}=require("./comments");
 
 
 mongoose.connect("mongodb+srv://dharaneesh1881:Dd%409790361881@cluster0.su0jsfi.mongodb.net/tweet");
@@ -324,7 +326,120 @@ app.put("/changepassword", auth, async (req, res) => {
 
 app.use("/updateprofilepicture", uploadprofileRoute);
 
+app.use("/post/:id/comment", commentRoute);
+
+app.get("/comment/:commentId/replies", async (req, res) => {
+  const replies = await commentModel
+    .find({ parentCommentId: req.params.commentId })
+    .sort({ createdAt: 1 })
+    .populate("userId", "name profile_url");
+
+  res.json({ replies });
+});
+
+
+app.post("/comment/:id/like", auth, async (req, res) => {
+  const userId = req.userId;
+  const commentId = req.params.id;
+
+  const comment = await commentModel.findById(commentId);
+
+  if (!comment) {
+    return res.status(404).json({ message: "Comment not found", success: false });
+  }
+
+  const alreadyLiked = comment.likes.includes(userId);
+
+  await commentModel.findByIdAndUpdate(commentId, {
+    [alreadyLiked ? "$pull" : "$addToSet"]: { likes: userId },
+    $pull: { dislikes: userId } 
+  });
+
+  res.json({
+    message: alreadyLiked ? "Like removed" : "Liked" ,
+    success: true
+  });
+});
+
+app.post("/comment/:id/dislike", auth, async (req, res) => {
+  const userId = req.userId;
+  const commentId = req.params.id;
+
+  const comment = await commentModel.findById(commentId);
+
+  if (!comment) {
+    return res.status(404).json({ message: "Comment not found",success:false });
+  }
+
+  const alreadyDisliked = comment.dislikes.includes(userId);
+
+  await commentModel.findByIdAndUpdate(commentId, {
+    [alreadyDisliked ? "$pull" : "$addToSet"]: { dislikes: userId },
+    $pull: { likes: userId } 
+  });
+
+  res.json({
+    message: alreadyDisliked ? "Dislike removed" : "Disliked",
+    success: true
+  });
+});
+
+app.delete("/comment/:id", auth, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const commentId = req.params.id;
+
+    const comment = await commentModel.findById(commentId);
+
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found", success: false });
+    }
+
+    const post = await postModel.findById(comment.postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found", success: false });
+    }
+
+    const isCommentOwner = comment.userId.toString() === userId;
+    const isPostOwner = post.userId.toString() === userId;
+
+    if (!isCommentOwner && !isPostOwner) {
+      return res.status(403).json({ message: "Not allowed", success: false });
+    }
+
+    await commentModel.deleteMany({
+      $or: [
+        { _id: comment._id },
+        { parentCommentId: comment._id }
+      ]
+    });
+    
+    if (!comment.parentCommentId) {
+      await postModel.findByIdAndUpdate(comment.postId, {
+        $inc: { commentCount: -1 }
+      });
+    }
+
+    res.json({ message: "Comment deleted successfully" ,success:true});
+
+  } catch (err) {
+    res.status(500).json({ message: "Failed to delete comment" ,success:false});
+  }
+});
 
 
 
-app.listen(3000);
+
+
+const PORT = Number(process.env.PORT) || 3001;
+const server = app.listen(PORT, () => {
+  console.log(`Backend listening on http://localhost:${PORT}`);
+});
+server.on("error", (err) => {
+  if (err && err.code === "EADDRINUSE") {
+    console.error(`Port ${PORT} is already in use. Try: PORT=3001 node index.js`);
+    process.exit(1);
+  }
+  throw err;
+});

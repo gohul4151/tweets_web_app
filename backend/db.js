@@ -27,13 +27,59 @@ const post =new Schema({
     tags:String,
 
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "users" }],
-    dislikes: [{ type: mongoose.Schema.Types.ObjectId, ref: "users" }]
-})
+    dislikes: [{ type: mongoose.Schema.Types.ObjectId, ref: "users" }],
+    commentCount: {type: Number, default: 0}     
+     
+});
+
+const commentSchema = new mongoose.Schema({
+  postId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "posts",
+    required: true
+  },
+
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "users",
+    required: true
+  },
+
+  text: {
+    type: String,
+    required: true,
+    trim: true
+  },
+
+  parentCommentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "comments",
+    default: null
+  },
+
+  likes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "users"
+  }],
+
+  dislikes: [{ type: mongoose.Schema.Types.ObjectId, ref: "users" }],
+
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+
+
+
 
 const userModel= mongoose.model("users",user);
 const postModel= mongoose.model("posts",post);
+const commentModel = mongoose.model("comments", commentSchema);
 
 module.exports={
     userModel:userModel,
-    postModel:postModel
+    postModel:postModel,
+    commentModel:commentModel
 } 
