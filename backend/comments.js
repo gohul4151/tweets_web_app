@@ -8,7 +8,7 @@ const { mapComment } = require('./countcomment');
 
 const router = express.Router();
 
-router.post("/", auth, async (req, res) => {
+router.post("/:id/comment", auth, async (req, res) => {
   const { text, parentCommentId } = req.body;
 
   if (!text || text.trim() === "") {
@@ -16,7 +16,7 @@ router.post("/", auth, async (req, res) => {
   }
 
   const comment = await commentModel.create({
-    postId: req.params.postId,
+    postId: req.params.id,
     userId: req.userId,
     text,
     parentCommentId: parentCommentId || null
@@ -41,14 +41,14 @@ router.post("/", auth, async (req, res) => {
 });
 
 
-router.get("/", auth, async (req, res) => {
+router.get("/:id/comment", auth, async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = 5;
   const skip = (page - 1) * limit;
 
   const comments = await commentModel
     .find({
-      postId: req.params.postId,
+      postId: req.params.id,
       parentCommentId: null
     })
     .sort({ createdAt: -1 })

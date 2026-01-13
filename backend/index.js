@@ -12,6 +12,7 @@ const {getpostRoute} = require("./getallpost");
 const {myPostRoute}=require("./getmypost");
 const {uploadprofileRoute}=require("./uploadprofile");
 const {commentRoute}=require("./comments");
+const {viewuserPostRoute}=require("./getviewuserpost");
 
 
 mongoose.connect("mongodb+srv://dharaneesh1881:Dd%409790361881@cluster0.su0jsfi.mongodb.net/tweet");
@@ -327,7 +328,7 @@ app.put("/changepassword", auth, async (req, res) => {
 app.use("/updateprofilepicture", uploadprofileRoute);
 
 // Comments route (post a comment, get parent comments )
-app.use("/post/:id/comment", commentRoute);
+app.use("/post", commentRoute);
 
 // Get replies for a comment
 app.get("/comment/:commentId/replies", auth, async (req, res) => {
@@ -448,7 +449,8 @@ app.delete("/comment/:id", auth, async (req, res) => {
   }
 });
 
-
+// get particular user's posts;
+app.use("/getuserpost/:id", viewuserPostRoute);
 
 
 
