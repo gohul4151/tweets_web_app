@@ -6,6 +6,7 @@ import { MessageCircle } from 'lucide-react';
 import { Send } from 'lucide-react';
 
 function Addpost({ p1, del, onDelete }) {
+    const [commentCount,setcommentCount]=useState(p1.commentCount);
     const [comment, setcomment] = useState("");
     const [error, setError] = useState(null);
     const [get_command,setget_command]=useState(null);
@@ -131,7 +132,10 @@ function Addpost({ p1, del, onDelete }) {
         setLoading(false); // Hide loading indicator
         setcomment("");
     }
-
+    
+    function updatecommentCount() {
+        setcommentCount(commentCount + 1);
+    }
     return (
         <div className="post-container">
             <div className="post-header">
@@ -266,7 +270,7 @@ function Addpost({ p1, del, onDelete }) {
                         }}>
                             <MessageCircle  />
                         </button>
-                    <div>{p1.commentCount}</div>
+                    <div>{commentCount}</div>
                 </div>
                 <div>
                     <button >
@@ -278,21 +282,23 @@ function Addpost({ p1, del, onDelete }) {
                 <div>
                     {command && (
                         <div className="comments-section">
-                            {Loading ? <div>Loading...</div> : 
-                            !get_command || get_command.length===0 ? <div>No comments</div> : 
-                            get_command.map((c, index) => (
-                                <div key={c._id || `comment-${index}`}>
-                                    <div style={{display:"flex", alignItems:"center"}}>
-                                        <img src={c.userId?.profile_url} alt="profile" className="profile-pic"/>
-                                        {c.userId?.name}
+                            {!get_command || get_command.length === 0 ? (
+                                <div>No comments</div>
+                            ) : (
+                                get_command.map((c, index) => (
+                                    <div key={c._id || `comment-${index}`}>
+                                        <div style={{display:"flex", alignItems:"center"}}>
+                                            <img src={c.userId?.profile_url} alt="profile" className="profile-pic"/>
+                                            {c.userId?.name}
+                                        </div>
+                                        <div style={{margin:"10px",paddingLeft:"55px"}}>
+                                            {c.text}
+                                        </div>
                                     </div>
-                                    <div style={{margin:"10px",paddingLeft:"55px"}}>
-                                        {c.text}
-                                    </div>
-                                </div>
-                            ))}
+                                ))
+                            )}
                             <input value={comment} type="text" onChange={(e) => setcomment(e.target.value)} />
-                            <button onClick={() => {sent_command();  }}>Send</button>
+                            <button onClick={() => {sent_command(); updatecommentCount(); }}>Send</button>
                         </div>
                     )}
                 </div>
