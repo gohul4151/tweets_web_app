@@ -23,7 +23,7 @@ router.post("/:id/comment", auth, async (req, res) => {
   });
 
   if (!parentCommentId) {
-    await postModel.findByIdAndUpdate(req.params.postId, {
+    await postModel.findByIdAndUpdate(req.params.id, {
       $inc: { commentCount: 1 }
     });
   }
