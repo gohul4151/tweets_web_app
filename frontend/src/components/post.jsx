@@ -105,7 +105,7 @@ function Addpost({ p1, del, onDelete }) {
                 credentials: 'include'
             });
             const data = await response.json();
-            setget_command(data.comment);
+            setget_command(data.comments);
             console.log("Comments response:", data);
             
         } catch (error) {
@@ -126,6 +126,10 @@ function Addpost({ p1, del, onDelete }) {
             body: JSON.stringify({ text: comment, parentCommentId: null }),
         });
         console.log("response : comment sent");
+        setLoading(true); // Show loading indicator
+        await getcommand(); // Wait for getcommand to complete
+        setLoading(false); // Hide loading indicator
+        setcomment("");
     }
 
     return (
@@ -276,9 +280,19 @@ function Addpost({ p1, del, onDelete }) {
                         <div className="comments-section">
                             {Loading ? <div>Loading...</div> : 
                             !get_command || get_command.length===0 ? <div>No comments</div> : 
-                            get_command.map((c) => <div>{c.text}</div>)}
-                            <input type="text" onChange={(e) => setcomment(e.target.value)} />
-                            <button onClick={sent_command}>Send</button>
+                            get_command.map((c, index) => (
+                                <div key={c._id || `comment-${index}`}>
+                                    <div style={{display:"flex", alignItems:"center"}}>
+                                        <img src={c.userId?.profile_url} alt="profile" className="profile-pic"/>
+                                        {c.userId?.name}
+                                    </div>
+                                    <div style={{margin:"10px",paddingLeft:"55px"}}>
+                                        {c.text}
+                                    </div>
+                                </div>
+                            ))}
+                            <input value={comment} type="text" onChange={(e) => setcomment(e.target.value)} />
+                            <button onClick={() => {sent_command();  }}>Send</button>
                         </div>
                     )}
                 </div>

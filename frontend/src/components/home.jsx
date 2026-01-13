@@ -150,7 +150,7 @@ function Home({setlog,settheme,theme})
             </div>
             
             <div style={{ position: 'fixed', bottom: '20px', right: '20px', display: 'flex', gap: '10px' }}>
-                <button onclick={() =>sethome(true)}><House /></button>
+                <button onClick={() =>sethome(true)}><House /></button>
                 <button onClick={() => setclose(true)}><Plus /></button>
                 <button onClick={() => setShowProfileModal(true)}>Edit Profile  <UserCog /></button>
                 <button onClick={() => {setyou(true); sethome(false);}}>My post <SquareUser /></button>
