@@ -4,9 +4,11 @@ import { ArrowBigUp } from 'lucide-react';
 import { ArrowBigDown } from 'lucide-react';
 import { MessageCircle } from 'lucide-react';
 import { Send } from 'lucide-react';
-import Command from './command.jsx';
 
 function Addpost({ p1, del, onDelete }) {
+    const [comment, setcomment] = useState("");
+    const [error, setError] = useState(null);
+    const [get_command,setget_command]=useState(null);
     const [command,setcommand]=useState(false);
     const [reply,setreply]=useState("");
     const [showOptions, setShowOptions] = useState(false);
@@ -17,6 +19,8 @@ function Addpost({ p1, del, onDelete }) {
     const [isdisliked, setisdisliked] = useState(p1.isDisliked);
     const [read, setread] = useState(false);
     const [tag,settag]=useState(p1.tags);
+    const [c_page,setc_page]=useState(1);
+    const [Loading,setLoading]=useState(false);
     const maxread = 150;
     const isLongDescription = p1.description && p1.description.length > maxread;
 
@@ -90,8 +94,39 @@ function Addpost({ p1, del, onDelete }) {
     }
 
 
+    async function getcommand() {
+        
+        setLoading(true);
+        setError(null);
+        
+        try {
+            const response = await fetch(`http://localhost:3000/post/${p1._id}/comment?page=${c_page}`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+            const data = await response.json();
+            setget_command(data.comment);
+            console.log("Comments response:", data);
+            
+        } catch (error) {
+            console.error("Error fetching comments:", error);
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    }
 
-
+    async function sent_command() {
+        const response = await fetch(`http://localhost:3000/post/${p1._id}/comment`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({ text: comment, parentCommentId: null }),
+        });
+        console.log("response : comment sent");
+    }
 
     return (
         <div className="post-container">
@@ -218,22 +253,35 @@ function Addpost({ p1, del, onDelete }) {
                     }
                 }}><ArrowBigDown /></button><div>{dislike}</div></div></span>
                 <div>
-                    <button>
-                        <MessageCircle onClick={() =>setcommand(!command)} />
-                    </button>
-                    <div>count</div>
+                        <button onClick={() => {
+                            setcommand(!command);
+                            if (!command) 
+                            {
+                                getcommand();
+                            }
+                        }}>
+                            <MessageCircle  />
+                        </button>
+                    <div>{p1.commentCount}</div>
                 </div>
                 <div>
-                    <button>
+                    <button >
                         <Send />
                     </button>
                 </div>
             </div>
             <div>
                 <div>
-                    {/* Render comments here in future */}
+                    {command && (
+                        <div className="comments-section">
+                            {Loading ? <div>Loading...</div> : 
+                            !get_command || get_command.length===0 ? <div>No comments</div> : 
+                            get_command.map((c) => <div>{c.text}</div>)}
+                            <input type="text" onChange={(e) => setcomment(e.target.value)} />
+                            <button onClick={sent_command}>Send</button>
+                        </div>
+                    )}
                 </div>
-                {command && <Command />}
             </div>
         </div>
     );
