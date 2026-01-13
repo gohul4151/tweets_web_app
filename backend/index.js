@@ -326,18 +326,36 @@ app.put("/changepassword", auth, async (req, res) => {
 
 app.use("/updateprofilepicture", uploadprofileRoute);
 
+// Comments route (post a comment, get parent comments )
 app.use("/post/:id/comment", commentRoute);
 
-app.get("/comment/:commentId/replies", async (req, res) => {
-  const replies = await commentModel
-    .find({ parentCommentId: req.params.commentId })
-    .sort({ createdAt: 1 })
-    .populate("userId", "name profile_url");
+// Get replies for a comment
+app.get("/comment/:commentId/replies", auth, async (req, res) => {
+  try {
+    const userId = req.userId;
 
-  res.json({ replies });
+    const replies = await commentModel
+      .find({ parentCommentId: req.params.commentId })
+      .sort({ createdAt: 1 })
+      .populate("userId", "name profile_url");
+
+    const modifiedReplies = replies.map(reply => ({
+      ...reply._doc,
+      isLiked: reply.likes.includes(userId),
+      isDisliked: reply.dislikes.includes(userId),
+      likesCount: reply.likes.length,
+      dislikesCount: reply.dislikes.length
+    }));
+
+    res.json({ replies: modifiedReplies });
+
+  } catch (err) {
+    res.status(500).json({ message: "Failed to load replies" });
+  }
 });
 
 
+// Like a comment
 app.post("/comment/:id/like", auth, async (req, res) => {
   const userId = req.userId;
   const commentId = req.params.id;
@@ -361,6 +379,7 @@ app.post("/comment/:id/like", auth, async (req, res) => {
   });
 });
 
+// Dislike a comment
 app.post("/comment/:id/dislike", auth, async (req, res) => {
   const userId = req.userId;
   const commentId = req.params.id;
@@ -384,6 +403,7 @@ app.post("/comment/:id/dislike", auth, async (req, res) => {
   });
 });
 
+// Delete a comment
 app.delete("/comment/:id", auth, async (req, res) => {
   try {
     const userId = req.userId;

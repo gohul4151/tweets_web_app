@@ -4,6 +4,7 @@ const { postModel } = require('./db');
 const { userModel } = require('./db');   
 const { commentModel } = require('./db');
 const { timeAgo }=require('./timeAgo');
+const { mapComment } = require('./countcomment');
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ router.post("/", auth, async (req, res) => {
 
   const comment = await commentModel.create({
     postId: req.params.postId,
-    userId: req.user.id,
+    userId: req.userId,
     text,
     parentCommentId: parentCommentId || null
   });
@@ -27,11 +28,20 @@ router.post("/", auth, async (req, res) => {
     });
   }
 
-  res.json({ comment });
+  const enrichedComment = {
+    ...comment._doc,
+    isLiked: false,
+    isDisliked: false,
+    likesCount: 0,
+    dislikesCount: 0,
+    repliesCount: 0
+  };
+
+  res.json({ comment: enrichedComment });
 });
 
 
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = 5;
   const skip = (page - 1) * limit;
@@ -46,17 +56,15 @@ router.get("/", async (req, res) => {
     .limit(limit)
     .populate("userId", "name profile_url");
 
-  res.json({ comments });
+  const mappedComments = await Promise.all(
+    comments.map(comment => mapComment(comment, req.userId))
+  );
+
+  res.json({ comments: mappedComments });
 });
 
-router.get("/comment/:commentId/replies", async (req, res) => {
-  const replies = await commentModel
-    .find({ parentCommentId: req.params.commentId })
-    .sort({ createdAt: 1 })
-    .populate("userId", "name profile_url");
 
-  res.json({ replies });
-});
+
 
 
 //GET /post/:id/comments?page=1;
