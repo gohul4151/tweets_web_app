@@ -452,7 +452,7 @@ app.delete("/comment/:id", auth, async (req, res) => {
 
 
 
-const PORT = Number(process.env.PORT) || 3001;
+const PORT = Number(process.env.PORT) || 3000;
 const server = app.listen(PORT, () => {
   console.log(`Backend listening on http://localhost:${PORT}`);
 });
