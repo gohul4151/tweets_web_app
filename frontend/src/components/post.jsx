@@ -7,6 +7,8 @@ import { Send } from 'lucide-react';
 import Command from './command.jsx';
 
 function Addpost({ p1, del, onDelete }) {
+    const [command,setcommand]=useState(false);
+    const [reply,setreply]=useState("");
     const [showOptions, setShowOptions] = useState(false);
     const optionsRef = useRef(null);
     const [like, setlike] = useState(p1.likesCount);
@@ -217,7 +219,7 @@ function Addpost({ p1, del, onDelete }) {
                 }}><ArrowBigDown /></button><div>{dislike}</div></div></span>
                 <div>
                     <button>
-                        <MessageCircle onClick={Command} />
+                        <MessageCircle onClick={() =>setcommand(!command)} />
                     </button>
                     <div>count</div>
                 </div>
@@ -231,7 +233,7 @@ function Addpost({ p1, del, onDelete }) {
                 <div>
                     {/* Render comments here in future */}
                 </div>
-                <Command />
+                {command && <Command />}
             </div>
         </div>
     );
