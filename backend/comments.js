@@ -51,7 +51,7 @@ router.get("/:id/comment", auth, async (req, res) => {
       postId: req.params.id,
       parentCommentId: null
     })
-    .sort({ createdAt: 1 })
+    .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
     .populate("userId", "name profile_url");
