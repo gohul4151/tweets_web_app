@@ -11,7 +11,7 @@ function Addpost({ p1, del, onDelete }) {
     const [error, setError] = useState(null);
     const [get_command,setget_command]=useState(null);
     const [command,setcommand]=useState(false);
-    const [reply,setreply]=useState("");
+    const [reply,setreply]=useState(true);
     const [showOptions, setShowOptions] = useState(false);
     const optionsRef = useRef(null);
     const [like, setlike] = useState(p1.likesCount);
@@ -22,6 +22,7 @@ function Addpost({ p1, del, onDelete }) {
     const [tag,settag]=useState(p1.tags);
     const [c_page,setc_page]=useState(1);
     const [Loading,setLoading]=useState(false);
+    const [hasMore, setHasMore] = useState(true);
     const maxread = 150;
     const isLongDescription = p1.description && p1.description.length > maxread;
 
@@ -94,9 +95,7 @@ function Addpost({ p1, del, onDelete }) {
         console.log("response :dislikeoff request");
     }
 
-
     async function getcommand() {
-        
         setLoading(true);
         setError(null);
         
@@ -106,7 +105,18 @@ function Addpost({ p1, del, onDelete }) {
                 credentials: 'include'
             });
             const data = await response.json();
-            setget_command(data.comments);
+            
+            if (c_page === 1) {
+                setget_command(data.comments);
+            } else {
+                // Append new comments to the end (bottom)
+                setget_command(prev => [...prev, ...data.comments]);
+            }
+            
+            if (data.comments.length === 0) {
+                setHasMore(false);
+            }
+            
             console.log("Comments response:", data);
             
         } catch (error) {
@@ -127,14 +137,65 @@ function Addpost({ p1, del, onDelete }) {
             body: JSON.stringify({ text: comment, parentCommentId: null }),
         });
         console.log("response : comment sent");
-        setLoading(true); // Show loading indicator
-        await getcommand(); // Wait for getcommand to complete
-        setLoading(false); // Hide loading indicator
+        setLoading(true);
+        setc_page(1);
+        setHasMore(true);
+        await getcommand();
+        setLoading(false);
         setcomment("");
     }
     
     function updatecommentCount() {
         setcommentCount(commentCount + 1);
+    }
+
+    useEffect(() => {
+        if (command && c_page > 1) {
+            getcommand();
+        }
+    }, [c_page]);
+
+    useEffect(() => {
+        if (command) {
+            setc_page(1);
+            setHasMore(true);
+        }
+    }, [command]);
+
+    async function send_reply(){
+        const response = await fetch(`http://localhost:3000/post/${p1._id}/comment`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({ text: comment}),
+        });
+        console.log("response : reply sent");
+        setreply(true);
+        setcomment("");
+    }
+
+    async function reply_like(){
+        const response = await fetch(`http://localhost:3000/post/${p1._id}/comment/like`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+        console.log("response : reply liked");
+    }
+
+    async function reply_dislike(){
+        const response = await fetch(`http://localhost:3000/post/${p1._id}/comment/dislike`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+        console.log("response : reply disliked");
     }
     return (
         <div className="post-container">
@@ -281,24 +342,67 @@ function Addpost({ p1, del, onDelete }) {
             <div>
                 <div>
                     {command && (
-                        <div className="comments-section">
-                            {!get_command || get_command.length === 0 ? (
-                                <div>No comments</div>
-                            ) : (
-                                get_command.map((c, index) => (
-                                    <div key={c._id || `comment-${index}`}>
-                                        <div style={{display:"flex", alignItems:"center"}}>
-                                            <img src={c.userId?.profile_url} alt="profile" className="profile-pic"/>
-                                            {c.userId?.name}
+                        <div>
+                            <div 
+                                onScroll={(e) => {
+                                    const { scrollTop, scrollHeight, clientHeight } = e.target;
+                                    // Load more when scrolling to BOTTOM
+                                    if (scrollHeight - scrollTop - clientHeight < 50 && !Loading && hasMore) {
+                                        setc_page(prev => prev + 1);
+                                    }
+                                }}
+                                style={{ 
+                                    maxHeight: '250px', 
+                                    overflowY: 'auto',
+                                    marginBottom: '10px'
+                                }}
+                            >
+                                {!get_command || get_command.length === 0 ? (
+                                    <div>No comments</div>
+                                ) : (
+                                    get_command.map((c, index) => (
+                                        <div key={c._id || index}>
+                                            <div style={{display:"flex", alignItems:"center"}}>
+                                                <img src={c.userId?.profile_url} alt="profile" className="profile-pic"/>
+                                                {c.userId?.name}
+                                            </div>
+                                            <div style={{margin:"10px",paddingLeft:"55px",display:"flex"}}>
+                                                {c.text}
+                                                <div style={{display:"flex"}}>
+                                                    {c.likesCount}
+                                                    <button onClick={reply_like()}>like</button>
+                                                </div>
+                                                <div style={{display:"flex"}}>
+                                                    {c.dislikesCount}
+                                                    <button onClick={reply_dislike()}>dislike</button>
+                                                </div>
+                                                <div style={{display:"flex"}}>
+                                                    {c.repliesCount}
+                                                    <button onClick={() => {setreply(!reply);}}>View replies</button>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div style={{margin:"10px",paddingLeft:"55px"}}>
-                                            {c.text}
-                                        </div>
+                                    ))
+                                )}
+                                
+                                {Loading && (
+                                    <div style={{ textAlign: 'center', padding: '10px' }}>
+                                        Loading more comments...
                                     </div>
-                                ))
-                            )}
+                                )}
+                            </div>
+                            
                             <input value={comment} type="text" onChange={(e) => setcomment(e.target.value)} />
-                            <button onClick={() => {sent_command(); updatecommentCount(); }}>Send</button>
+                            <button onClick={() => { 
+                                if (reply) {
+                                    sent_command();
+                                    updatecommentCount();
+                                } else {
+                                    send_reply();
+                                }
+                                }}>
+                                {reply ? "Send" : "Reply"}
+                            </button>
                         </div>
                     )}
                 </div>
