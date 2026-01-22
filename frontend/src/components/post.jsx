@@ -6,6 +6,7 @@ import { MessageCircle } from 'lucide-react';
 import { Send } from 'lucide-react';
 
 function Addpost({ p1, del, onDelete }) {
+    const [getreply,setgetreply]=useState(null);
     const [commentCount,setcommentCount]=useState(p1.commentCount);
     const [comment, setcomment] = useState("");
     const [error, setError] = useState(null);
@@ -197,6 +198,20 @@ function Addpost({ p1, del, onDelete }) {
         });
         console.log("response : reply disliked");
     }
+
+    async function get_reply()
+    {
+        const response=await fetch(`http://localhost:3000`,{
+            method:'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        })
+        const data = await response.json();
+        setgetreply(data);
+        console.log("response:view replies");
+    }
     return (
         <div className="post-container">
             <div className="post-header">
@@ -380,6 +395,9 @@ function Addpost({ p1, del, onDelete }) {
                                                     {c.repliesCount}
                                                     <button onClick={() => {setreply(!reply);}}>View replies</button>
                                                 </div>
+                                            </div>
+                                            <div>
+                                                {}
                                             </div>
                                         </div>
                                     ))
