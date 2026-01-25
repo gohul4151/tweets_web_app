@@ -1,9 +1,9 @@
-const express = require('express');  
-const { auth } = require('./auth');  
-const { postModel } = require('./db');      
-const { userModel } = require('./db');   
+const express = require('express');
+const { auth } = require('./auth');
+const { postModel } = require('./db');
+const { userModel } = require('./db');
 const { commentModel } = require('./db');
-const { timeAgo }=require('./timeAgo');
+const { timeAgo } = require('./timeAgo');
 const { mapComment } = require('./countcomment');
 
 const router = express.Router();
@@ -27,6 +27,9 @@ router.post("/:id/comment", auth, async (req, res) => {
       $inc: { commentCount: 1 }
     });
   }
+
+  // Populate the userId field with user's name and profile_url
+  await comment.populate("userId", "name profile_url");
 
   const enrichedComment = {
     ...comment._doc,
