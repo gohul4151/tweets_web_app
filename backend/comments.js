@@ -28,7 +28,10 @@ router.post("/:id/comment", auth, async (req, res) => {
     });
   }
 
+<<<<<<< HEAD
   // Populate the userId field with user's name and profile_url
+=======
+>>>>>>> b125a81 (add populate in create comment request from frontend)
   await comment.populate("userId", "name profile_url");
 
   const enrichedComment = {
@@ -42,6 +45,7 @@ router.post("/:id/comment", auth, async (req, res) => {
 
   res.json({ comment: enrichedComment });
 });
+
 
 
 router.get("/:id/comment", auth, async (req, res) => {
