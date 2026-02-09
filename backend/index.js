@@ -452,6 +452,31 @@ app.delete("/comment/:id", auth, async (req, res) => {
 // get particular user's posts;
 app.use("/getuserpost/:id", viewuserPostRoute);
 
+// search users by username
+app.get("/search/users", auth, async (req, res) => {
+  try {
+    const query = req.query.q;
+
+    if (!query || query.trim() === "") {
+      return res.json({ users: [] });
+    }
+
+    const users = await userModel.find(
+      {
+        name: { $regex: query, $options: "i" }
+      },
+      {
+        name: 1,
+        profile_url: 1 
+      }
+    ).limit(10); 
+
+    res.json({ users });
+
+  } catch (err) {
+    res.status(500).json({ message: "Search failed" });
+  }
+});
 
 
 const PORT = Number(process.env.PORT) || 3000;
