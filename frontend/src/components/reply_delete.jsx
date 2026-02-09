@@ -12,7 +12,7 @@ function Reply_delete({ c_id, parentCommentId, onDelete }) {
         }
     }
     return (
-        <button onClick={delete_reply}><Trash2 size={14} /></button>
+        <button onClick={delete_reply}><Trash2 /></button>
     )
 }
 export default Reply_delete;
