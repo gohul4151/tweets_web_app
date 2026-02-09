@@ -4,8 +4,13 @@ import { ArrowBigUp } from 'lucide-react';
 import { ArrowBigDown } from 'lucide-react';
 import { MessageCircle } from 'lucide-react';
 import { Send } from 'lucide-react';
+import Delete from './delete';
 
 function Addpost({ p1, del, onDelete }) {
+    const profile = useRef(null);
+    const name=useRef(null);
+    const [user,setuser]=useState(p1.user);
+    console.log(user);
     const [getreply,setgetreply]=useState({});
     const [commentCount,setcommentCount]=useState(p1.commentCount);
     const [comment, setcomment] = useState("");
@@ -26,6 +31,20 @@ function Addpost({ p1, del, onDelete }) {
     const [showRepliesForComment, setShowRepliesForComment] = useState({});
     const [replyingToCommentId, setReplyingToCommentId] = useState(null);
     
+    //getting the username
+    async function username(){
+        const res = await fetch("http://localhost:3000/mytotalpost", {
+            method: "GET",
+            credentials: "include",
+        });
+        const data=await res.json();
+        name.current=data.name;
+        profile.current=data.profile_url;
+    }
+    username();
+    console.log(name);
+    console.log(profile);
+
     // Track reply pages and loading states for each comment
     const [replyPages, setReplyPages] = useState({});
     const [replyLoading, setReplyLoading] = useState({});
@@ -600,6 +619,11 @@ function Addpost({ p1, del, onDelete }) {
                                             <div style={{display:"flex", alignItems:"center"}}>
                                                 <img src={c.userId?.profile_url || "/default-avatar.png"} alt="profile" className="profile-pic"/>
                                                 {c.userId?.name || "You"}
+                                                {c.userId?.name == name && (
+                                                    <div>
+                                                        <button>delete</button>
+                                                    </div>
+                                                )}
                                             </div>
                                             <div style={{margin:"10px",paddingLeft:"55px"}}>
                                                 <div>{c.text}</div>
@@ -633,6 +657,7 @@ function Addpost({ p1, del, onDelete }) {
                                                         </button>
                                                     </div>
                                                 </div>
+                                            
                                                 
                                                 {replyingToCommentId === c._id && (
                                                     <div style={{ marginTop: "10px", display: "flex", gap: "5px" }}>
