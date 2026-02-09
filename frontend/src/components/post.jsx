@@ -8,15 +8,14 @@ import Delete from './delete';
 
 function Addpost({ p1, del, onDelete }) {
     const profile = useRef(null);
-    const name=useRef(null);
-    const [user,setuser]=useState(p1.user);
-    console.log(user);
-    const [getreply,setgetreply]=useState({});
-    const [commentCount,setcommentCount]=useState(p1.commentCount);
+    const name = useRef(null);
+    const [user, setuser] = useState(p1.userId.name);
+    const [getreply, setgetreply] = useState({});
+    const [commentCount, setcommentCount] = useState(p1.commentCount);
     const [comment, setcomment] = useState("");
     const [error, setError] = useState(null);
-    const [get_command,setget_command]=useState(null);
-    const [command,setcommand]=useState(false);
+    const [get_command, setget_command] = useState(null);
+    const [command, setcommand] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
     const optionsRef = useRef(null);
     const [like, setlike] = useState(p1.likesCount);
@@ -24,22 +23,22 @@ function Addpost({ p1, del, onDelete }) {
     const [isliked, setisliked] = useState(p1.isLiked);
     const [isdisliked, setisdisliked] = useState(p1.isDisliked);
     const [read, setread] = useState(false);
-    const [tag,settag]=useState(p1.tags);
-    const [c_page,setc_page]=useState(1);
-    const [Loading,setLoading]=useState(false);
+    const [tag, settag] = useState(p1.tags);
+    const [c_page, setc_page] = useState(1);
+    const [Loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [showRepliesForComment, setShowRepliesForComment] = useState({});
     const [replyingToCommentId, setReplyingToCommentId] = useState(null);
-    
+
     //getting the username
-    async function username(){
+    async function username() {
         const res = await fetch("http://localhost:3000/mytotalpost", {
             method: "GET",
             credentials: "include",
         });
-        const data=await res.json();
-        name.current=data.name;
-        profile.current=data.profile_url;
+        const data = await res.json();
+        name.current = data.name;
+        profile.current = data.profile_url;
     }
     username();
     console.log(name);
@@ -50,7 +49,7 @@ function Addpost({ p1, del, onDelete }) {
     const [replyLoading, setReplyLoading] = useState({});
     const [replyHasMore, setReplyHasMore] = useState({});
     const replyRefs = useRef({});
-    
+
     const maxread = 150;
     const isLongDescription = p1.description && p1.description.length > maxread;
 
@@ -88,6 +87,12 @@ function Addpost({ p1, del, onDelete }) {
         setShowOptions(false);
     };
 
+    // Handle comment deletion - update UI immediately
+    const handleCommentDelete = (commentId) => {
+        setget_command(prev => prev.filter(c => c._id !== commentId));
+        setcommentCount(prev => Math.max(0, prev - 1));
+    };
+
     async function sentlikeon() {
         const response = await fetch(`http://localhost:3000/post/${p1._id}/likeon`, {
             method: 'POST',
@@ -123,14 +128,14 @@ function Addpost({ p1, del, onDelete }) {
     async function getcommand() {
         setLoading(true);
         setError(null);
-        
+
         try {
             const response = await fetch(`http://localhost:3000/post/${p1._id}/comment?page=${c_page}`, {
                 method: 'GET',
                 credentials: 'include'
             });
             const data = await response.json();
-            
+
             if (c_page === 1) {
                 setget_command(data.comments);
             } else {
@@ -138,13 +143,13 @@ function Addpost({ p1, del, onDelete }) {
                 // But for pagination, we should append at bottom. However, for new comments we prepend
                 setget_command(prev => [...prev, ...data.comments]);
             }
-            
+
             if (data.comments.length === 0) {
                 setHasMore(false);
             }
-            
+
             console.log("Comments response:", data);
-            
+
         } catch (error) {
             console.error("Error fetching comments:", error);
             setError(error.message);
@@ -185,13 +190,13 @@ function Addpost({ p1, del, onDelete }) {
                 credentials: 'include',
                 body: JSON.stringify({ text: comment, parentCommentId: null }),
             });
-            
+
             const result = await response.json();
-            
+
             if (result.comment) {
                 // Replace temp comment with real comment from server
-                setget_command(prev => 
-                    prev.map(c => 
+                setget_command(prev =>
+                    prev.map(c =>
                         c._id === tempComment._id ? result.comment : c
                     )
                 );
@@ -201,9 +206,9 @@ function Addpost({ p1, del, onDelete }) {
                 setHasMore(true);
                 await getcommand();
             }
-            
+
             console.log("response : comment sent");
-            
+
         } catch (error) {
             console.error("Error sending comment:", error);
             // Remove temp comment on error
@@ -227,9 +232,9 @@ function Addpost({ p1, del, onDelete }) {
         }
     }, [command]);
 
-    async function send_reply(parentCommentId){
+    async function send_reply(parentCommentId) {
         // Update UI immediately - increment reply count
-        setget_command(prev => 
+        setget_command(prev =>
             prev.map(comment => {
                 if (comment._id === parentCommentId) {
                     return {
@@ -248,13 +253,13 @@ function Addpost({ p1, del, onDelete }) {
                     'Content-Type': 'application/json',
                 },
                 credentials: 'include',
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     text: comment,
                     parentCommentId: parentCommentId
                 }),
             });
             console.log("response : reply sent");
-            
+
             // Refresh replies if they are shown
             if (showRepliesForComment[parentCommentId]) {
                 // Reset to page 1 and reload all replies
@@ -262,11 +267,11 @@ function Addpost({ p1, del, onDelete }) {
                 setgetreply(prev => ({ ...prev, [parentCommentId]: [] }));
                 await get_reply(parentCommentId, 1, true);
             }
-            
+
         } catch (error) {
             console.error("Error sending reply:", error);
             // Rollback on error
-            setget_command(prev => 
+            setget_command(prev =>
                 prev.map(comment => {
                     if (comment._id === parentCommentId) {
                         return {
@@ -285,24 +290,24 @@ function Addpost({ p1, del, onDelete }) {
 
     // Handle comment like with immediate UI update
     async function handleCommentLike(commentId) {
-        setget_command(prev => 
+        setget_command(prev =>
             prev.map(comment => {
                 if (comment._id === commentId) {
                     const updatedComment = { ...comment };
-                    
+
                     if (updatedComment.isLiked) {
                         updatedComment.likesCount = Math.max(0, updatedComment.likesCount - 1);
                         updatedComment.isLiked = false;
                     } else {
                         updatedComment.likesCount = updatedComment.likesCount + 1;
                         updatedComment.isLiked = true;
-                        
+
                         if (updatedComment.isDisliked) {
                             updatedComment.dislikesCount = Math.max(0, updatedComment.dislikesCount - 1);
                             updatedComment.isDisliked = false;
                         }
                     }
-                    
+
                     return updatedComment;
                 }
                 return comment;
@@ -325,24 +330,24 @@ function Addpost({ p1, del, onDelete }) {
 
     // Handle comment dislike with immediate UI update
     async function handleCommentDislike(commentId) {
-        setget_command(prev => 
+        setget_command(prev =>
             prev.map(comment => {
                 if (comment._id === commentId) {
                     const updatedComment = { ...comment };
-                    
+
                     if (updatedComment.isDisliked) {
                         updatedComment.dislikesCount = Math.max(0, updatedComment.dislikesCount - 1);
                         updatedComment.isDisliked = false;
                     } else {
                         updatedComment.dislikesCount = updatedComment.dislikesCount + 1;
                         updatedComment.isDisliked = true;
-                        
+
                         if (updatedComment.isLiked) {
                             updatedComment.likesCount = Math.max(0, updatedComment.likesCount - 1);
                             updatedComment.isLiked = false;
                         }
                     }
-                    
+
                     return updatedComment;
                 }
                 return comment;
@@ -366,7 +371,7 @@ function Addpost({ p1, del, onDelete }) {
     // Get replies with pagination
     async function get_reply(commentId, page = 1, reset = false) {
         setReplyLoading(prev => ({ ...prev, [commentId]: true }));
-        
+
         try {
             const response = await fetch(`http://localhost:3000/comment/${commentId}/replies?page=${page}&limit=10`, {
                 method: 'GET',
@@ -375,9 +380,9 @@ function Addpost({ p1, del, onDelete }) {
                 },
                 credentials: 'include',
             });
-            
+
             const data = await response.json();
-            
+
             // Handle different response structures
             let replies = [];
             if (Array.isArray(data)) {
@@ -387,7 +392,7 @@ function Addpost({ p1, del, onDelete }) {
             } else if (data.comments) {
                 replies = data.comments;
             }
-            
+
             setgetreply(prev => {
                 const currentReplies = prev[commentId] || [];
                 if (reset || page === 1) {
@@ -396,21 +401,21 @@ function Addpost({ p1, del, onDelete }) {
                     return { ...prev, [commentId]: [...currentReplies, ...replies] };
                 }
             });
-            
+
             // Update hasMore flag for this comment
             setReplyHasMore(prev => ({
                 ...prev,
                 [commentId]: replies.length === 10
             }));
-            
+
             // Update page for this comment
             setReplyPages(prev => ({
                 ...prev,
                 [commentId]: page
             }));
-            
+
             console.log("Loaded replies for comment", commentId, "page", page, "count:", replies.length);
-            
+
         } catch (error) {
             console.error("Error fetching replies:", error);
         } finally {
@@ -421,7 +426,7 @@ function Addpost({ p1, del, onDelete }) {
     // Function to handle scroll for replies
     const handleReplyScroll = (e, commentId) => {
         const { scrollTop, scrollHeight, clientHeight } = e.target;
-        
+
         // Load more when scrolled near bottom (within 50px)
         if (scrollHeight - scrollTop - clientHeight < 50) {
             // Check if not already loading and has more to load
@@ -434,12 +439,12 @@ function Addpost({ p1, del, onDelete }) {
 
     const toggleReplies = async (commentId) => {
         const isCurrentlyShowing = showRepliesForComment[commentId];
-        
+
         setShowRepliesForComment(prev => ({
             ...prev,
             [commentId]: !isCurrentlyShowing
         }));
-        
+
         if (!isCurrentlyShowing) {
             // Initialize states for this comment if not exists
             if (!replyPages[commentId]) {
@@ -449,7 +454,7 @@ function Addpost({ p1, del, onDelete }) {
                 await get_reply(commentId, 1, true);
             }
         }
-        
+
         setReplyingToCommentId(null);
     };
 
@@ -568,7 +573,7 @@ function Addpost({ p1, del, onDelete }) {
                         }
                         setdislike(c => c + 1);
                         setisdisliked(true);
-                            sentdislikeon();
+                        sentdislikeon();
                     }
                     else {
                         setdislike(c => c - 1);
@@ -577,15 +582,14 @@ function Addpost({ p1, del, onDelete }) {
                     }
                 }}><ArrowBigDown /></button><div>{dislike}</div></div></span>
                 <div>
-                        <button onClick={() => {
-                            setcommand(!command);
-                            if (!command) 
-                            {
-                                getcommand();
-                            }
-                        }}>
-                            <MessageCircle  />
-                        </button>
+                    <button onClick={() => {
+                        setcommand(!command);
+                        if (!command) {
+                            getcommand();
+                        }
+                    }}>
+                        <MessageCircle />
+                    </button>
                     <div>{commentCount}</div>
                 </div>
                 <div>
@@ -598,15 +602,15 @@ function Addpost({ p1, del, onDelete }) {
                 <div>
                     {command && (
                         <div>
-                            <div 
+                            <div
                                 onScroll={(e) => {
                                     const { scrollTop, scrollHeight, clientHeight } = e.target;
                                     if (scrollHeight - scrollTop - clientHeight < 50 && !Loading && hasMore) {
                                         setc_page(prev => prev + 1);
                                     }
                                 }}
-                                style={{ 
-                                    maxHeight: '250px', 
+                                style={{
+                                    maxHeight: '250px',
                                     overflowY: 'auto',
                                     marginBottom: '10px'
                                 }}
@@ -616,37 +620,37 @@ function Addpost({ p1, del, onDelete }) {
                                 ) : (
                                     get_command.map((c, index) => (
                                         <div key={c._id || index}>
-                                            <div style={{display:"flex", alignItems:"center"}}>
-                                                <img src={c.userId?.profile_url || "/default-avatar.png"} alt="profile" className="profile-pic"/>
+                                            <div style={{ display: "flex", alignItems: "center" }}>
+                                                <img src={c.userId?.profile_url || "/default-avatar.png"} alt="profile" className="profile-pic" />
                                                 {c.userId?.name || "You"}
-                                                {c.userId?.name == name && (
+                                                {(user === name.current || c.userId?.name === name.current) && (
                                                     <div>
-                                                        <button>delete</button>
+                                                        <Delete c_id={c._id} onDelete={handleCommentDelete} />
                                                     </div>
                                                 )}
                                             </div>
-                                            <div style={{margin:"10px",paddingLeft:"55px"}}>
+                                            <div style={{ margin: "10px", paddingLeft: "55px" }}>
                                                 <div>{c.text}</div>
-                                                <div style={{display:"flex", gap: "10px", marginTop: "5px"}}>
-                                                    <div style={{display:"flex", alignItems:"center"}}>
+                                                <div style={{ display: "flex", gap: "10px", marginTop: "5px" }}>
+                                                    <div style={{ display: "flex", alignItems: "center" }}>
                                                         {c.likesCount}
                                                         <button onClick={() => handleCommentLike(c._id)}>
                                                             like
                                                         </button>
                                                     </div>
-                                                    <div style={{display:"flex", alignItems:"center"}}>
+                                                    <div style={{ display: "flex", alignItems: "center" }}>
                                                         {c.dislikesCount}
                                                         <button onClick={() => handleCommentDislike(c._id)}>
                                                             dislike
                                                         </button>
                                                     </div>
-                                                    <div style={{display:"flex", alignItems:"center"}}>
+                                                    <div style={{ display: "flex", alignItems: "center" }}>
                                                         {c.repliesCount}
                                                         <button onClick={() => toggleReplies(c._id)}>
                                                             {showRepliesForComment[c._id] ? "Hide replies" : "View replies"}
                                                         </button>
                                                     </div>
-                                                    <div style={{display:"flex", alignItems:"center"}}>
+                                                    <div style={{ display: "flex", alignItems: "center" }}>
                                                         <button onClick={() => {
                                                             setReplyingToCommentId(
                                                                 replyingToCommentId === c._id ? null : c._id
@@ -657,13 +661,13 @@ function Addpost({ p1, del, onDelete }) {
                                                         </button>
                                                     </div>
                                                 </div>
-                                            
-                                                
+
+
                                                 {replyingToCommentId === c._id && (
                                                     <div style={{ marginTop: "10px", display: "flex", gap: "5px" }}>
-                                                        <input 
-                                                            value={comment} 
-                                                            type="text" 
+                                                        <input
+                                                            value={comment}
+                                                            type="text"
                                                             onChange={(e) => setcomment(e.target.value)}
                                                             placeholder="Write a reply..."
                                                             style={{ flex: 1 }}
@@ -674,37 +678,37 @@ function Addpost({ p1, del, onDelete }) {
                                                         </button>
                                                     </div>
                                                 )}
-                                                
+
                                                 {showRepliesForComment[c._id] && (
-                                                    <div style={{ 
+                                                    <div style={{
                                                         marginTop: "10px",
                                                         marginLeft: "20px",
                                                         borderLeft: "2px solid #ddd",
                                                         paddingLeft: "10px"
                                                     }}>
-                                                        <div 
+                                                        <div
                                                             ref={el => replyRefs.current[c._id] = el}
                                                             onScroll={(e) => handleReplyScroll(e, c._id)}
-                                                            style={{ 
-                                                                maxHeight: "200px", 
+                                                            style={{
+                                                                maxHeight: "200px",
                                                                 overflowY: "auto",
                                                                 marginBottom: "10px"
                                                             }}
                                                         >
                                                             {getreply[c._id] && getreply[c._id].length > 0 ? (
                                                                 getreply[c._id].map((reply, replyIndex) => (
-                                                                    <div key={reply._id || replyIndex} style={{ 
+                                                                    <div key={reply._id || replyIndex} style={{
                                                                         marginBottom: "8px",
                                                                         paddingBottom: "8px",
                                                                         borderBottom: "1px solid #eee"
                                                                     }}>
                                                                         <div style={{ display: "flex", alignItems: "center" }}>
-                                                                            <img 
-                                                                                src={reply.user?.profile_url || reply.userId?.profile_url || "/default-avatar.png"} 
-                                                                                alt="profile" 
-                                                                                style={{ 
-                                                                                    width: "25px", 
-                                                                                    height: "25px", 
+                                                                            <img
+                                                                                src={reply.user?.profile_url || reply.userId?.profile_url || "/default-avatar.png"}
+                                                                                alt="profile"
+                                                                                style={{
+                                                                                    width: "25px",
+                                                                                    height: "25px",
                                                                                     borderRadius: "50%",
                                                                                     marginRight: "8px"
                                                                                 }}
@@ -723,7 +727,7 @@ function Addpost({ p1, del, onDelete }) {
                                                                     No replies yet
                                                                 </div>
                                                             )}
-                                                            
+
                                                             {/* Show loading indicator when loading more replies */}
                                                             {replyLoading[c._id] && (
                                                                 <div style={{ textAlign: "center", padding: "10px", color: "#666", fontSize: "0.9em" }}>
@@ -737,24 +741,24 @@ function Addpost({ p1, del, onDelete }) {
                                         </div>
                                     ))
                                 )}
-                                
+
                                 {Loading && (
                                     <div style={{ textAlign: 'center', padding: '10px' }}>
                                         Loading more comments...
                                     </div>
                                 )}
                             </div>
-                            
+
                             {replyingToCommentId === null && (
                                 <div style={{ display: "flex", gap: "5px", marginTop: "10px" }}>
-                                    <input 
-                                        value={comment} 
-                                        type="text" 
+                                    <input
+                                        value={comment}
+                                        type="text"
                                         onChange={(e) => setcomment(e.target.value)}
                                         placeholder="Write a comment..."
                                         style={{ flex: 1 }}
                                     />
-                                    <button onClick={() => { 
+                                    <button onClick={() => {
                                         sent_command();
                                     }}>
                                         Send
