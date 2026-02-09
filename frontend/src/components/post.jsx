@@ -5,6 +5,7 @@ import { ArrowBigDown } from 'lucide-react';
 import { MessageCircle } from 'lucide-react';
 import { Send } from 'lucide-react';
 import Delete from './delete';
+import Reply_delete from './reply_delete';
 
 function Addpost({ p1, del, onDelete }) {
     const profile = useRef(null);
@@ -91,6 +92,22 @@ function Addpost({ p1, del, onDelete }) {
     const handleCommentDelete = (commentId) => {
         setget_command(prev => prev.filter(c => c._id !== commentId));
         setcommentCount(prev => Math.max(0, prev - 1));
+    };
+
+    // Handle reply deletion - update UI immediately
+    const handleReplyDelete = (replyId, parentCommentId) => {
+        // Remove reply from the replies list
+        setgetreply(prev => ({
+            ...prev,
+            [parentCommentId]: prev[parentCommentId]?.filter(r => r._id !== replyId) || []
+        }));
+        // Decrement replies count on the parent comment
+        setget_command(prev => prev.map(c => {
+            if (c._id === parentCommentId) {
+                return { ...c, repliesCount: Math.max(0, (c.repliesCount || 1) - 1) };
+            }
+            return c;
+        }));
     };
 
     async function sentlikeon() {
@@ -716,6 +733,13 @@ function Addpost({ p1, del, onDelete }) {
                                                                             <strong style={{ fontSize: "0.9em" }}>
                                                                                 {reply.user?.name || reply.userId?.name || "Unknown User"}
                                                                             </strong>
+                                                                            {(user === name.current || (reply.user?.name || reply.userId?.name) === name.current) && (
+                                                                                <Reply_delete
+                                                                                    c_id={reply._id}
+                                                                                    parentCommentId={c._id}
+                                                                                    onDelete={handleReplyDelete}
+                                                                                />
+                                                                            )}
                                                                         </div>
                                                                         <div style={{ marginLeft: "33px", fontSize: "0.9em" }}>
                                                                             {reply.text || reply.content || "No content"}
