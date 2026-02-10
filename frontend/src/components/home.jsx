@@ -217,7 +217,7 @@ function Home({ setlog, settheme, theme }) {
                                     onClick={() => {
                                         console.log("Selected user:", user);
                                         setShowResults(false);
-                                        setSearchQuery("");
+                                        setSearchQuery(user.name);
                                     }}
                                 >
                                     <img
