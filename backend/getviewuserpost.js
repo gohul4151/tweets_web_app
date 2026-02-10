@@ -4,12 +4,15 @@ const {postModel}=require('./db');
 const {userModel}=require('./db');
 const { timeAgo }=require('./timeAgo');
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router.get("/",auth,async (req, res) => {
   try {
-    const viweuser= req.params.name;
-    const user = await userModel.find({ name: viweuser});
+    const viewuser = req.params.name;
+    const user = await userModel.findOne({ name: viewuser });
+    if (!user) {
+      return res.status(404).json({ message: "User not found", posts: [] });
+    }
 
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
