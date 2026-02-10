@@ -13,6 +13,7 @@ import { House } from 'lucide-react';
 import { LogOut } from 'lucide-react';
 import { Search } from 'lucide-react';
 import useDebounce from './useDebounce';
+import Username from './username';
 
 function Home({ setlog, settheme, theme }) {
     function Theme() {
@@ -111,8 +112,14 @@ function Home({ setlog, settheme, theme }) {
         setrefpost(prev => prev + 1);
     };
 
+    const [viewUser, setViewUser] = useState(null);
+
     if (you_post) {
         return <YourPost you_post={you_post} setyou={setyou} setrefpost={setrefpost} />
+    }
+
+    if (viewUser) {
+        return <Username username={viewUser} sethome={() => setViewUser(null)} />
     }
 
     // Search state
@@ -179,6 +186,11 @@ function Home({ setlog, settheme, theme }) {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onFocus={() => searchQuery && setShowResults(true)}
                 />
+                <button onClick={() => {
+                    if (searchQuery.trim()) {
+                        setViewUser(searchQuery);
+                    }
+                }}>Search</button>
 
                 {/* Search Results Dropdown */}
                 {showResults && (
