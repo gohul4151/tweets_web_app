@@ -114,14 +114,6 @@ function Home({ setlog, settheme, theme }) {
 
     const [viewUser, setViewUser] = useState(null);
 
-    if (you_post) {
-        return <YourPost you_post={you_post} setyou={setyou} setrefpost={setrefpost} />
-    }
-
-    if (viewUser) {
-        return <Username username={viewUser} sethome={() => setViewUser(null)} />
-    }
-
     // Search state
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState([]);
@@ -171,6 +163,16 @@ function Home({ setlog, settheme, theme }) {
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+    if (you_post) {
+        return <YourPost you_post={you_post} setyou={setyou} setrefpost={setrefpost} />
+    }
+
+    if (viewUser) {
+        return <Username username={viewUser} sethome={() => setViewUser(null)} />
+    }
+
+
 
     return <>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -263,7 +265,7 @@ function Home({ setlog, settheme, theme }) {
             <div>
                 {p1.length > 0 ? (
                     p1.map((post, index) => (
-                        <Addpost key={post._id || index} p1={post} />
+                        <Addpost key={post._id || index} p1={post} onUserClick={setViewUser} />
                     ))
                 ) : !isLoading ? (
                     <p>No posts to display</p>

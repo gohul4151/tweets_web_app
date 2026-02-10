@@ -7,7 +7,7 @@ import { Send } from 'lucide-react';
 import Delete from './delete';
 import Reply_delete from './reply_delete';
 
-function Addpost({ p1, del, onDelete }) {
+function Addpost({ p1, del, onDelete, onUserClick }) {
     const profile = useRef(null);
     const name = useRef(null);
     const [user, setuser] = useState(p1.userId.name);
@@ -482,9 +482,16 @@ function Addpost({ p1, del, onDelete }) {
                     src={p1.userId?.profile_url}
                     alt="profile"
                     className="profile-pic"
+                    onClick={() => onUserClick && onUserClick(p1.userId?.name)}
+                    style={{ cursor: onUserClick ? 'pointer' : 'default' }}
                 />
-                <span className="username">{p1.userId?.name}</span>
-                {p1.timeAgo && <div>{p1.timeAgo}</div>}
+                <span
+                    className="username"
+                    onClick={() => onUserClick && onUserClick(p1.userId?.name)}
+                    style={{ cursor: onUserClick ? 'pointer' : 'default' }}
+                >
+                    {p1.userId?.name}
+                </span>                {p1.timeAgo && <div>{p1.timeAgo}</div>}
 
                 {del && (
                     <div className="post-options" ref={optionsRef}>
