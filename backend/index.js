@@ -450,7 +450,7 @@ app.delete("/comment/:id", auth, async (req, res) => {
 });
 
 // get particular user's posts;
-app.use("/getuserpost/:id", viewuserPostRoute);
+app.use("/getuserpost/:name", viewuserPostRoute);
 
 // search users by username
 app.get("/search/users", auth, async (req, res) => {
@@ -467,7 +467,8 @@ app.get("/search/users", auth, async (req, res) => {
       },
       {
         name: 1,
-        profile_url: 1 
+        profile_url: 1, 
+        _id: 1
       }
     ).limit(10); 
 

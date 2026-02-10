@@ -8,8 +8,8 @@ const router = express.Router();
 
 router.get("/",auth,async (req, res) => {
   try {
-    const viweuserId= req.params.id;
-    const user = await userModel.findById(viweuserId);
+    const viweuser= req.params.name;
+    const user = await userModel.find({ name: viweuser});
 
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
