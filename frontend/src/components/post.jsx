@@ -46,7 +46,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
 
     //getting the username
     async function username() {
-        const res = await fetch("http://localhost:3000/mytotalpost", {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/mytotalpost`, {
             method: "GET",
             credentials: "include",
         });
@@ -85,7 +85,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
 
     const handleDelete = async () => {
         try {
-            const response = await fetch(`http://localhost:3000/deletepost/${p1._id}`, {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/deletepost/${p1._id}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });
@@ -124,7 +124,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
     };
 
     async function sentlikeon() {
-        const response = await fetch(`http://localhost:3000/post/${p1._id}/likeon`, {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/post/${p1._id}/likeon`, {
             method: 'POST',
             credentials: 'include'
         });
@@ -132,7 +132,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
     }
 
     async function sentlikeoff() {
-        const response = await fetch(`http://localhost:3000/post/${p1._id}/likeoff`, {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/post/${p1._id}/likeoff`, {
             method: 'POST',
             credentials: 'include'
         });
@@ -140,7 +140,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
     }
 
     async function sentdislikeon() {
-        const response = await fetch(`http://localhost:3000/post/${p1._id}/dislikeon`, {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/post/${p1._id}/dislikeon`, {
             method: 'POST',
             credentials: 'include'
         });
@@ -148,7 +148,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
     }
 
     async function sentdislikeoff() {
-        const response = await fetch(`http://localhost:3000/post/${p1._id}/dislikeoff`, {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/post/${p1._id}/dislikeoff`, {
             method: 'POST',
             credentials: 'include'
         });
@@ -160,7 +160,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
         setError(null);
 
         try {
-            const response = await fetch(`http://localhost:3000/post/${p1._id}/comment?page=${c_page}`, {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/post/${p1._id}/comment?page=${c_page}`, {
                 method: 'GET',
                 credentials: 'include'
             });
@@ -212,7 +212,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
         setcomment(""); // Clear input immediately
 
         try {
-            const response = await fetch(`http://localhost:3000/post/${p1._id}/comment`, {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/post/${p1._id}/comment`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -277,7 +277,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
         );
 
         try {
-            const response = await fetch(`http://localhost:3000/post/${p1._id}/comment`, {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/post/${p1._id}/comment`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -345,7 +345,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
         );
 
         try {
-            const response = await fetch(`http://localhost:3000/comment/${commentId}/like`, {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/comment/${commentId}/like`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -385,7 +385,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
         );
 
         try {
-            const response = await fetch(`http://localhost:3000/comment/${commentId}/dislike`, {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/comment/${commentId}/dislike`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -403,7 +403,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
         setReplyLoading(prev => ({ ...prev, [commentId]: true }));
 
         try {
-            const response = await fetch(`http://localhost:3000/comment/${commentId}/replies?page=${page}&limit=10`, {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/comment/${commentId}/replies?page=${page}&limit=10`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',

@@ -8,11 +8,9 @@ import { Moon } from 'lucide-react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 function MainApp() {
-  const [theme,settheme]=useState('light');
-  function Theme()
-  {
-      if (theme=='light')
-      {
+  const [theme, settheme] = useState('light');
+  function Theme() {
+    if (theme == 'light') {
       settheme('dark');
     }
     else {
@@ -26,7 +24,7 @@ function MainApp() {
   useEffect(() => {
     async function checkLogin() {
       try {
-        const response = await fetch("http://localhost:3000/mytotalpost", {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/mytotalpost`, {
           method: "GET",
           credentials: "include"
         });

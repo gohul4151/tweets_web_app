@@ -26,7 +26,7 @@ function Username({ username, sethome }) {
     const getPosts = useCallback(async (pageNum) => {
         setLoading(true);
         try {
-            const response = await fetch(`http://localhost:3000/getuserpost/${username}?page=${pageNum}&limit=10`, {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/getuserpost/${username}?page=${pageNum}&limit=10`, {
                 method: "GET",
                 credentials: "include"
             });

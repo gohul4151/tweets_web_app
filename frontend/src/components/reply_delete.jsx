@@ -1,7 +1,7 @@
 import { Trash2 } from 'lucide-react';
 function Reply_delete({ c_id, parentCommentId, onDelete }) {
     async function delete_reply() {
-        const res = await fetch(`http://localhost:3000/comment/${c_id}`, {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/comment/${c_id}`, {
             method: "DELETE",
             credentials: "include"
         });

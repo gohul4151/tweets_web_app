@@ -1,27 +1,27 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import Addpost from "./post";
 
-function YourPost({ you_post, setyou,setrefpost }) {
+function YourPost({ you_post, setyou, setrefpost }) {
     const [pos, setpos] = useState([]);
     const [totalPosts, setTotalPosts] = useState(0);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
     const [initialLoad, setInitialLoad] = useState(true);
-    
+
     const name = useRef(null);
     const profile = useRef(null);
     const observer = useRef();
     const lastPostRef = useCallback(node => {
         if (loading) return;
         if (observer.current) observer.current.disconnect();
-        
+
         observer.current = new IntersectionObserver(entries => {
             if (entries[0].isIntersecting && hasMore) {
                 setPage(prevPage => prevPage + 1);
             }
         });
-        
+
         if (node) observer.current.observe(node);
     }, [loading, hasMore]);
 
@@ -30,7 +30,7 @@ function YourPost({ you_post, setyou,setrefpost }) {
         try {
             // First fetch total posts and user info on initial load
             if (pageNum === 1) {
-                const res = await fetch("http://localhost:3000/mytotalpost", {
+                const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/mytotalpost`, {
                     method: "GET",
                     credentials: "include",
                 });
@@ -41,15 +41,15 @@ function YourPost({ you_post, setyou,setrefpost }) {
             }
 
             // Fetch posts for current page
-            const result = await fetch(`http://localhost:3000/getmypost?page=${pageNum}&limit=10`, {
+            const result = await fetch(`${import.meta.env.VITE_BACKEND_URL}/getmypost?page=${pageNum}&limit=10`, {
                 method: "GET",
                 credentials: "include",
             });
-            
+
             if (!result.ok) throw new Error("Failed to fetch posts");
-            
+
             const data = await result.json();
-            
+
             // Handle different response structures
             let postsArray = [];
             if (Array.isArray(data)) {
@@ -59,15 +59,15 @@ function YourPost({ you_post, setyou,setrefpost }) {
             } else if (Array.isArray(data.data)) {
                 postsArray = data.data;
             }
-            
+
             // Check if we have more posts
             if (postsArray.length === 0 || postsArray.length < 10) {
                 setHasMore(false);
             }
-            
+
             // Append new posts or set initial posts
             setpos(prev => pageNum === 1 ? postsArray : [...prev, ...postsArray]);
-            
+
         } catch (error) {
             console.error("Error fetching posts:", error);
         } finally {
@@ -92,9 +92,9 @@ function YourPost({ you_post, setyou,setrefpost }) {
         setpos(prev => prev.filter(post => post._id !== deletedPostId));
         setTotalPosts(prev => prev - 1);
     };
-    
+
     const handleBackClick = () => {
-        setrefpost(c => c+1);
+        setrefpost(c => c + 1);
         setyou(false);
     };
 
@@ -102,13 +102,13 @@ function YourPost({ you_post, setyou,setrefpost }) {
         <div>
             <div>
                 <div>
-                    Profile: <img src={profile.current} alt="profile" className="profile-pic"/>
+                    Profile: <img src={profile.current} alt="profile" className="profile-pic" />
                 </div>
                 <div>Username: {name.current}</div>
                 <div>Total posts: {totalPosts}</div>
                 <button onClick={handleBackClick}>Back</button>
             </div>
-            
+
             <div>
                 <div>
                     {initialLoad ? (
@@ -118,8 +118,8 @@ function YourPost({ you_post, setyou,setrefpost }) {
                             if (index === pos.length - 1) {
                                 return (
                                     <div ref={lastPostRef} key={post._id}>
-                                        <Addpost 
-                                            p1={post} 
+                                        <Addpost
+                                            p1={post}
                                             del={true}
                                             onDelete={handleDeletePost}
                                         />
@@ -127,9 +127,9 @@ function YourPost({ you_post, setyou,setrefpost }) {
                                 );
                             }
                             return (
-                                <Addpost 
-                                    key={post._id} 
-                                    p1={post} 
+                                <Addpost
+                                    key={post._id}
+                                    p1={post}
                                     del={true}
                                     onDelete={handleDeletePost}
                                 />
@@ -138,7 +138,7 @@ function YourPost({ you_post, setyou,setrefpost }) {
                     ) : (
                         <p>No posts to display</p>
                     )}
-                    
+
                     {loading && <p>Loading more posts...</p>}
                     {!hasMore && pos.length > 0 && <p>No more posts to load</p>}
                 </div>

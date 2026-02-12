@@ -12,12 +12,12 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
     const fileInputRef = useRef(null);
     const [msg, setmsg] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-    
+
     // Open specific modal
     const openModal = (modalType) => {
         setActiveModal(modalType);
     };
-    
+
     // Close all modals
     const closeAllModals = () => {
         setActiveModal(null);
@@ -27,7 +27,7 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
         setShowProfileModal(false);
         setIsLoading(false);
     };
-    
+
     // Handle file upload
     const handleFileSelect = (e) => {
         const file = e.target.files[0];
@@ -37,7 +37,7 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
             console.log("Selected file:", file.name);
         }
     };
-    
+
     // Handle profile image update
     const updateProfileImage = async () => {
         if (fileInputRef.current?.files[0]) {
@@ -46,8 +46,8 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
                 const file = fileInputRef.current.files[0];
                 const data = new FormData();
                 data.append("profileurl", file);
-                
-                const response = await fetch(`http://localhost:3000/updateprofilepicture`, {
+
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/updateprofilepicture`, {
                     method: `PUT`,
                     credentials: "include",
                     body: data
@@ -64,13 +64,13 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
             }
         }
     };
-    
+
     // Handle username update
     const updateUsername = async () => {
         if (newUsername.trim()) {
             setIsLoading(true);
             try {
-                const response = await fetch(`http://localhost:3000/changeusername`, {
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/changeusername`, {
                     method: "PUT",
                     headers: {
                         'Content-Type': 'application/json'
@@ -79,7 +79,7 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
                     body: JSON.stringify({ name: newUsername })
                 });
                 const data = await response.json();
-                
+
                 if (data.message == "Name too short" || data.message == "user name already exists") {
                     setmsg(data.message);
                     setIsLoading(false);
@@ -96,13 +96,13 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
             }
         }
     };
-    
+
     // Handle password update
     const updatePassword = async () => {
         if (currentPassword && newPassword) {
             setIsLoading(true);
             try {
-                const response = await fetch(`http://localhost:3000/changepassword`, {
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/changepassword`, {
                     method: "PUT",
                     headers: {
                         'Content-Type': 'application/json'
@@ -111,7 +111,7 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
                     body: JSON.stringify({ currentPassword, newPassword })
                 });
                 const data = await response.json();
-                
+
                 if (data.message == "incorrect oldcurrent password") {
                     setmsg(data.message);
                     setIsLoading(false);
@@ -128,12 +128,12 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
             }
         }
     };
-    
+
     // Don't render anything if showProfileModal is false
     if (!showProfileModal) {
         return null;
     }
-    
+
     // Main Profile Modal - always shown when showProfileModal is true
     return (
         <div className="profile-modal-overlay">
@@ -145,19 +145,19 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
                         <p>Updating...</p>
                     </div>
                 )}
-                
+
                 {/* Profile Image Update Modal */}
                 {activeModal === 'image' && (
                     <>
                         <div className="postclose">
                             <button onClick={() => setActiveModal(null)} disabled={isLoading}>✕</button>
                         </div>
-                        
+
                         <div className="posttitle">
                             <p>Change Profile Picture</p>
                             <div className="upload-button">
-                                <input 
-                                    type='file' 
+                                <input
+                                    type='file'
                                     ref={fileInputRef}
                                     onChange={handleFileSelect}
                                     accept="image/*"
@@ -172,7 +172,7 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
                                 </p>
                             </div>
                         </div>
-                        
+
                         <div className="postbuttons">
                             <button onClick={() => setActiveModal(null)} disabled={isLoading}>Cancel</button>
                             <button onClick={updateProfileImage} disabled={isLoading}>
@@ -181,18 +181,18 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
                         </div>
                     </>
                 )}
-                
+
                 {/* Username Update Modal */}
                 {activeModal === 'username' && (
                     <>
                         <div className="postclose">
                             <button onClick={() => setActiveModal(null)} disabled={isLoading}>✕</button>
                         </div>
-                        
+
                         <div className="postbody">
                             <p>New Username</p>
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 placeholder="Enter new username"
                                 value={newUsername}
                                 onChange={(e) => setNewUsername(e.target.value)}
@@ -201,7 +201,7 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
                             <div>{msg}</div>
                             <div className="error-msg-user"></div>
                         </div>
-                        
+
                         <div className="postbuttons">
                             <button onClick={() => setActiveModal(null)} disabled={isLoading}>Cancel</button>
                             <button onClick={updateUsername} disabled={isLoading}>
@@ -210,18 +210,18 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
                         </div>
                     </>
                 )}
-                
+
                 {/* Password Update Modal */}
                 {activeModal === 'password' && (
                     <>
                         <div className="postclose">
                             <button onClick={() => setActiveModal(null)} disabled={isLoading}>✕</button>
                         </div>
-                        
+
                         <div className="posttag">
                             <p>Current Password</p>
-                            <input 
-                                type="password" 
+                            <input
+                                type="password"
                                 placeholder="Enter current password"
                                 value={currentPassword}
                                 onChange={(e) => setCurrentPassword(e.target.value)}
@@ -230,11 +230,11 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
                             <div>{msg}</div>
                             <div className="error-msg-password"></div>
                         </div>
-                        
+
                         <div className="posttag">
                             <p>New Password</p>
-                            <input 
-                                type="password" 
+                            <input
+                                type="password"
                                 placeholder="Enter new password"
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
@@ -250,21 +250,21 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
                         </div>
                     </>
                 )}
-                
+
                 {/* Main Menu - shown when no activeModal is selected */}
                 {!activeModal && (
                     <>
                         <div className="postclose">
                             <button onClick={closeAllModals} disabled={isLoading}>✕</button>
                         </div>
-                        
+
                         <div className="profile-menu">
                             <h2 style={{ textAlign: 'center', marginBottom: '30px', color: '#333' }}>
                                 Update Profile
                             </h2>
-                            
+
                             <div className="profile-options">
-                                <button 
+                                <button
                                     className="profile-option-btn"
                                     onClick={() => openModal('image')}
                                     disabled={isLoading}
@@ -276,8 +276,8 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
                                     </div>
                                     <div className="option-arrow">→</div>
                                 </button>
-                                
-                                <button 
+
+                                <button
                                     className="profile-option-btn"
                                     onClick={() => openModal('username')}
                                     disabled={isLoading}
@@ -289,8 +289,8 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
                                     </div>
                                     <div className="option-arrow">→</div>
                                 </button>
-                                
-                                <button 
+
+                                <button
                                     className="profile-option-btn"
                                     onClick={() => openModal('password')}
                                     disabled={isLoading}
@@ -303,7 +303,7 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
                                     <div className="option-arrow">→</div>
                                 </button>
                             </div>
-                            
+
                             <div className="postbuttons">
                                 <button onClick={closeAllModals} disabled={isLoading}>Close</button>
                             </div>

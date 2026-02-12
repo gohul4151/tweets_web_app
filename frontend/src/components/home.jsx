@@ -36,7 +36,7 @@ function Home({ setlog, settheme, theme }) {
     const fetchPosts = async (page = 1) => {
         setIsLoading(true);
         try {
-            const result = await fetch(`http://localhost:3000/getpost?page=${page}`, {
+            const result = await fetch(`${import.meta.env.VITE_BACKEND_URL}/getpost?page=${page}`, {
                 method: "GET",
                 credentials: "include",
             });
@@ -135,7 +135,7 @@ function Home({ setlog, settheme, theme }) {
 
             setIsSearching(true);
             try {
-                const res = await fetch(`http://localhost:3000/search/users?q=${encodeURIComponent(debouncedQuery)}`, {
+                const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/search/users?q=${encodeURIComponent(debouncedQuery)}`, {
                     method: "GET",
                     credentials: "include"
                 });

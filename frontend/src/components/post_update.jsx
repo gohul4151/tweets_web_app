@@ -25,7 +25,7 @@ function Addpostupdate({ des, ti, tag, file, setclose, addpost }) {
             formData.append("description", description);
             formData.append("tag", tagValue);
 
-            const response = await fetch("http://localhost:3000/putpost", {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/putpost`, {
                 method: "POST",
                 body: formData,  // Send FormData directly
                 credentials: "include"
