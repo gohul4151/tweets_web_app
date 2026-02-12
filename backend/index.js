@@ -479,6 +479,40 @@ app.get("/search/users", auth, async (req, res) => {
   }
 });
 
+app.get("/post/:id", async (req, res) => {
+  try {
+    const postId = req.params.id;
+
+    const post = await postModel
+      .findById(postId)
+      .populate("userId", "name profile_url");
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+    
+    let userId = null;
+    try {
+      if (req.cookies?.token) {
+        const decoded = jwt.verify(req.cookies.token, JWT_SECRET);
+        userId = decoded.id;
+      }
+    } catch (e) {}
+
+    res.json({
+      ...post._doc,
+      isLiked: userId ? post.likes.includes(userId) : false,
+      isDisliked: userId ? post.dislikes.includes(userId) : false,
+      likesCount: post.likes.length,
+      dislikesCount: post.dislikes.length,
+      canInteract: !!userId // 👈 frontend uses this
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: "Failed to load post" });
+  }
+});
+
 
 const PORT = Number(process.env.PORT) || 3000;
 const server = app.listen(PORT, () => {
