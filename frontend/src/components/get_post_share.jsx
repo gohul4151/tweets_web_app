@@ -5,20 +5,19 @@ import Addpost from './post';
 function GetPostShare() {
     const { id } = useParams();
     const [post, setPost] = useState(null);
+    const [canInteract, setCanInteract] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                // Fetching from the endpoint requested by the user: /sharepost/:id
-                // Note: Ensure the backend supports this endpoint.
                 const response = await fetch(`http://localhost:3000/sharepost/${id}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    credentials: 'include' // Important for auth if backend checks it
+                    credentials: 'include'
                 });
 
                 if (!response.ok) {
@@ -26,11 +25,9 @@ function GetPostShare() {
                 }
 
                 const data = await response.json();
-
-                // Assuming the backend returns { post: { ... } } or just the post object
-                // Adapting based on standard patterns observed in getallpost.js
                 const postData = data.post || data;
                 setPost(postData);
+                setCanInteract(!!postData.canInteract);
 
             } catch (err) {
                 console.error("Failed to fetch post:", err);
@@ -70,8 +67,38 @@ function GetPostShare() {
                     ← Back to Feed
                 </a>
             </div>
+
+            {/* Show login/signup banner when user is not logged in */}
+            {!canInteract && (
+                <div style={{
+                    border: '1px solid #ccc',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    marginBottom: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '10px'
+                }}>
+                    <div style={{ fontSize: '0.9rem' }}>
+                        Sign up or log in to like, dislike, and comment.
+                    </div>
+                    <a href="/" style={{
+                        padding: '6px 14px',
+                        borderRadius: '4px',
+                        border: '1px solid #888',
+                        textDecoration: 'none',
+                        fontSize: '0.85rem',
+                        color: 'inherit'
+                    }}>
+                        Log In / Sign Up
+                    </a>
+                </div>
+            )}
+
             {post ? (
-                <Addpost p1={post} />
+                <Addpost p1={post} canInteract={canInteract} />
             ) : (
                 <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>Post not found</div>
             )}
@@ -80,3 +107,4 @@ function GetPostShare() {
 }
 
 export default GetPostShare;
+

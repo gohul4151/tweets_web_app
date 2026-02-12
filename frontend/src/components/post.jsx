@@ -8,7 +8,7 @@ import Delete from './delete';
 import Reply_delete from './reply_delete';
 import Share from './share';
 
-function Addpost({ p1, del, onDelete, onUserClick }) {
+function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
     const profile = useRef(null);
     const name = useRef(null);
     const [user, setuser] = useState(p1.userId.name);
@@ -32,6 +32,17 @@ function Addpost({ p1, del, onDelete, onUserClick }) {
     const [showRepliesForComment, setShowRepliesForComment] = useState({});
     const [replyingToCommentId, setReplyingToCommentId] = useState(null);
     const [showShare, setShowShare] = useState(false);
+    const [authToast, setAuthToast] = useState(false);
+
+    // Helper: check if user can interact; if not, show login/signup toast
+    function requireAuth() {
+        if (!canInteract) {
+            setAuthToast(true);
+            setTimeout(() => setAuthToast(false), 3000);
+            return false;
+        }
+        return true;
+    }
 
     //getting the username
     async function username() {
@@ -574,6 +585,7 @@ function Addpost({ p1, del, onDelete, onUserClick }) {
 
             <div className="post-stats">
                 <span><div><button onClick={() => {
+                    if (!requireAuth()) return;
                     if (isliked === false) {
                         if (isdisliked === true) {
                             setdislike(c => c - 1);
@@ -591,6 +603,7 @@ function Addpost({ p1, del, onDelete, onUserClick }) {
                     }
                 }}><ArrowBigUp /></button><div>{like}</div></div></span>
                 <span><div><button onClick={() => {
+                    if (!requireAuth()) return;
                     if (isdisliked === false) {
                         if (isliked === true) {
                             setlike(c => c - 1);
@@ -609,6 +622,7 @@ function Addpost({ p1, del, onDelete, onUserClick }) {
                 }}><ArrowBigDown /></button><div>{dislike}</div></div></span>
                 <div>
                     <button onClick={() => {
+                        if (!requireAuth()) return;
                         setcommand(!command);
                         if (!command) {
                             getcommand();
@@ -660,13 +674,13 @@ function Addpost({ p1, del, onDelete, onUserClick }) {
                                                 <div style={{ display: "flex", gap: "10px", marginTop: "5px" }}>
                                                     <div style={{ display: "flex", alignItems: "center" }}>
                                                         {c.likesCount}
-                                                        <button onClick={() => handleCommentLike(c._id)}>
+                                                        <button onClick={() => { if (!requireAuth()) return; handleCommentLike(c._id); }}>
                                                             like
                                                         </button>
                                                     </div>
                                                     <div style={{ display: "flex", alignItems: "center" }}>
                                                         {c.dislikesCount}
-                                                        <button onClick={() => handleCommentDislike(c._id)}>
+                                                        <button onClick={() => { if (!requireAuth()) return; handleCommentDislike(c._id); }}>
                                                             dislike
                                                         </button>
                                                     </div>
@@ -678,6 +692,7 @@ function Addpost({ p1, del, onDelete, onUserClick }) {
                                                     </div>
                                                     <div style={{ display: "flex", alignItems: "center" }}>
                                                         <button onClick={() => {
+                                                            if (!requireAuth()) return;
                                                             setReplyingToCommentId(
                                                                 replyingToCommentId === c._id ? null : c._id
                                                             );
@@ -699,7 +714,7 @@ function Addpost({ p1, del, onDelete, onUserClick }) {
                                                             style={{ flex: 1 }}
                                                             autoFocus
                                                         />
-                                                        <button onClick={() => send_reply(c._id)}>
+                                                        <button onClick={() => { if (!requireAuth()) return; send_reply(c._id); }}>
                                                             Send
                                                         </button>
                                                     </div>
@@ -792,6 +807,7 @@ function Addpost({ p1, del, onDelete, onUserClick }) {
                                         style={{ flex: 1 }}
                                     />
                                     <button onClick={() => {
+                                        if (!requireAuth()) return;
                                         sent_command();
                                     }}>
                                         Send
@@ -803,6 +819,25 @@ function Addpost({ p1, del, onDelete, onUserClick }) {
                 </div>
             </div>
             <Share isOpen={showShare} onClose={() => setShowShare(false)} post={p1} />
+
+            {/* Auth toast notification */}
+            {authToast && (
+                <div style={{
+                    position: 'fixed',
+                    bottom: '20px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    backgroundColor: '#333',
+                    color: '#fff',
+                    padding: '10px 20px',
+                    borderRadius: '6px',
+                    zIndex: 10000,
+                    fontSize: '0.9rem',
+                    animation: 'fadeInUp 0.3s ease-out'
+                }}>
+                    Please sign up or log in to interact with this post
+                </div>
+            )}
         </div>
     );
 }
