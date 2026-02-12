@@ -479,7 +479,7 @@ app.get("/search/users", auth, async (req, res) => {
   }
 });
 
-app.get("/post/:id", async (req, res) => {
+app.get("/sharepost/:id", async (req, res) => {
   try {
     const postId = req.params.id;
 
