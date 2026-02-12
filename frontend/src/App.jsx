@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react'
 import Login from "./components/login";
 import Signup from "./components/signup";
 import Home from "./components/home";
+import GetPostShare from "./components/get_post_share";
 import { Sun } from 'lucide-react';
 import { Moon } from 'lucide-react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-function App() {
+function MainApp() {
   const [theme,settheme]=useState('light');
   function Theme()
   {
@@ -59,6 +61,17 @@ function App() {
     <button type="button" onClick={() => setlogin(false)}>signup</button>
     {login ? <Login setlog={setlog} /> : <Signup setlogin={setlogin} />}
   </>
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/post/:id" element={<GetPostShare />} />
+        <Route path="*" element={<MainApp />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App

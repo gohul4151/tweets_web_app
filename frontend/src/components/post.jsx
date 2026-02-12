@@ -6,6 +6,7 @@ import { MessageCircle } from 'lucide-react';
 import { Send } from 'lucide-react';
 import Delete from './delete';
 import Reply_delete from './reply_delete';
+import Share from './share';
 
 function Addpost({ p1, del, onDelete, onUserClick }) {
     const profile = useRef(null);
@@ -30,6 +31,7 @@ function Addpost({ p1, del, onDelete, onUserClick }) {
     const [hasMore, setHasMore] = useState(true);
     const [showRepliesForComment, setShowRepliesForComment] = useState({});
     const [replyingToCommentId, setReplyingToCommentId] = useState(null);
+    const [showShare, setShowShare] = useState(false);
 
     //getting the username
     async function username() {
@@ -617,7 +619,7 @@ function Addpost({ p1, del, onDelete, onUserClick }) {
                     <div>{commentCount}</div>
                 </div>
                 <div>
-                    <button >
+                    <button onClick={() => setShowShare(true)}>
                         <Send />
                     </button>
                 </div>
@@ -800,6 +802,7 @@ function Addpost({ p1, del, onDelete, onUserClick }) {
                     )}
                 </div>
             </div>
+            <Share isOpen={showShare} onClose={() => setShowShare(false)} post={p1} />
         </div>
     );
 }
