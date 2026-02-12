@@ -50,8 +50,6 @@ router.post("/", auth, upload.single("file"), async (req, res) => {
       ).end(req.file.buffer);
     });
 
-    console.log(uploadResult);
-
 
     try {
       const { title, description ,tag} = req.body;

@@ -39,8 +39,6 @@ router.put("/",auth, uploadprofile.single("profileurl") ,async (req, res) => {
       profile_url: uploadResult.secure_url
     });
 
-    console.log(uploadResult);
-
     res.json({
       message: "Profile picture updated",
       profile_url: uploadResult.secure_url
