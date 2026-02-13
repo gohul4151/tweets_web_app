@@ -119,10 +119,11 @@ app.post("/login", async function (req, res) {
       id: user._id
     }, JWT_SECRET);
 
+    const isProduction = process.env.NODE_ENV === "production";
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,     // true in production (HTTPS)
-      sameSite: "lax"
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax"
     });
 
     if (user.profile_url == undefined) {
