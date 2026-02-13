@@ -119,7 +119,7 @@ app.post("/login", async function (req, res) {
       id: user._id
     }, JWT_SECRET);
 
-    const isProduction = process.env.NODE_ENV === "production";
+    const isProduction = (process.env.CORS_ORIGINS || "").includes("https");
     res.cookie("token", token, {
       httpOnly: true,
       secure: isProduction,
