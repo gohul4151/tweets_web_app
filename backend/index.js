@@ -23,14 +23,18 @@ const app = express();
 app.use(express.json());
 const allowedOrigins = (process.env.CORS_ORIGINS || "http://localhost:5173,http://127.0.0.1:5173")
   .split(",")
-  .map((o) => o.trim())
+  .map((o) => o.trim().replace(/\/$/, "")) // Remove trailing slash if present
   .filter(Boolean);
+
 app.use(
   cors({
     origin: (origin, callback) => {
+      // Debugging: Check Render logs to see mismatch
+      console.log("Request Origin:", origin, "| Allowed:", allowedOrigins);
+
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(null, false);
+      return callback(null, false); // Blocked
     },
     credentials: true
   })
