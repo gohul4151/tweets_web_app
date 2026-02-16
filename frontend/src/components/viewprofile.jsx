@@ -49,9 +49,8 @@ function Profile({ setrefpost, refpost, goHome }) {
             setIsLoading(true);
             try {
                 const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/updateprofilepicture`, {
-                    method: 'PUT',
-                    credentials: "include",
-                    body: new FormData()
+                    method: 'DELETE',
+                    credentials: "include"
                 });
                 const data = await response.json();
 
@@ -75,6 +74,7 @@ function Profile({ setrefpost, refpost, goHome }) {
             }
         }
     };
+
 
     // Handle profile image update
     const updateProfileImage = async () => {

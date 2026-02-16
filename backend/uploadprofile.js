@@ -67,6 +67,36 @@ router.put("/", auth, uploadprofile.single("profileurl"), async (req, res) => {
     message: "Profile picture updated",
     profile_url: uploadResult.secure_url
   });
-}
-);
+});
+
+// DELETE route - Remove profile picture
+router.delete("/", auth, async (req, res) => {
+  try {
+    const defaultUrl = "https://res.cloudinary.com/dbqdx1m4t/image/upload/v1771181818/profile_pics/nwirmfxg3fi59tqnxyyj.jpg";
+    const { deleteFromCloudinaryAsync } = require('./cloudinaryUtils');
+
+    // Get the user's current profile picture
+    const user = await userModel.findById(req.userId);
+    const oldProfileUrl = user?.profile_url;
+
+    // Set to default profile picture
+    await userModel.findByIdAndUpdate(req.userId, {
+      profile_url: defaultUrl
+    });
+
+    // Delete old profile from Cloudinary if it's not the default
+    if (oldProfileUrl && oldProfileUrl !== defaultUrl) {
+      deleteFromCloudinaryAsync(oldProfileUrl, 'image');
+    }
+
+    res.json({
+      message: "Profile picture removed",
+      profile_url: defaultUrl
+    });
+  } catch (err) {
+    console.error("Error removing profile picture:", err);
+    res.status(500).json({ message: "Failed to remove profile picture" });
+  }
+});
+
 module.exports = { uploadprofileRoute: router };
