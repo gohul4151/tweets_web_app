@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --primary: #475569;
+  /* Slate 600 */
+  --primary-hover: #1e293b;
+  --accent: #64748b;
+  --card-bg: #ffffff;
+  --border: #f1f5f9;
+}
+
+.dark {
+  --background: #09090b;
+  /* Zinc 950 */
+  --foreground: #f4f4f5;
+  --primary: #a1a1aa;
+  /* Zinc 400 */
+  --primary-hover: #e4e4e7;
+  --accent: #71717a;
+  --card-bg: #111113;
+  /* Zinc 900 */
+  --border: #27272a;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Outfit', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer utilities {
+  .glass-effect {
+    @apply bg-white/70 dark:bg-black/70 backdrop-blur-xl border-b border-white/20 dark:border-white/5;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-700 rounded-full hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors;
+}

@@ -1,10 +1,7 @@
-import { useState, useRef } from 'react';
-import '../modal.css';
-import { CircleUser } from 'lucide-react';
-import { UserPen } from 'lucide-react';
-import { LockKeyhole } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { CircleUser, UserPen, LockKeyhole, X, Upload, ChevronRight, Loader2, ArrowLeft, Trash2 } from 'lucide-react';
 
-function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
+function Profile({ setrefpost, refpost, goHome }) {
     const [activeModal, setActiveModal] = useState(null); // 'image', 'username', 'password'
     const [newUsername, setNewUsername] = useState('');
     const [currentPassword, setCurrentPassword] = useState('');
@@ -12,29 +9,70 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
     const fileInputRef = useRef(null);
     const [msg, setmsg] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [userData, setUserData] = useState(null);
 
-    // Open specific modal
+    useEffect(() => {
+        async function fetchUserData() {
+            try {
+                const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/mytotalpost`, {
+                    method: "GET",
+                    credentials: "include",
+                });
+                const data = await res.json();
+                setUserData(data);
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+            }
+        }
+        fetchUserData();
+    }, [refpost]);
+
+    // Open specific view
     const openModal = (modalType) => {
         setActiveModal(modalType);
+        setmsg(null);
     };
 
-    // Close all modals
+    // Close all views
     const closeAllModals = () => {
         setActiveModal(null);
         setNewUsername('');
         setCurrentPassword('');
         setNewPassword('');
-        setShowProfileModal(false);
+        setmsg(null);
         setIsLoading(false);
     };
 
-    // Handle file upload
-    const handleFileSelect = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const data = new FormData();
-            data.append("profile", file);
-            console.log("Selected file:", file.name);
+    // Handle profile image removal
+    const removeProfileImage = async () => {
+        if (window.confirm("Are you sure you want to remove your profile photo?")) {
+            setIsLoading(true);
+            try {
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/updateprofilepicture`, {
+                    method: 'PUT',
+                    credentials: "include",
+                    body: new FormData()
+                });
+                const data = await response.json();
+
+                // Update local state immediately with the new default profile URL
+                setUserData(prev => ({
+                    ...prev,
+                    profile_url: data.profile_url
+                }));
+
+                // Trigger global refresh
+                setrefpost(c => c + 1);
+
+                // Close modal and show success message
+                setIsLoading(false);
+                closeAllModals();
+                alert(data.message || "Profile photo removed");
+            } catch (error) {
+                console.error("Error removing profile image:", error);
+                alert("Failed to remove profile image");
+                setIsLoading(false);
+            }
         }
     };
 
@@ -44,19 +82,29 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
             setIsLoading(true);
             try {
                 const file = fileInputRef.current.files[0];
-                const data = new FormData();
-                data.append("profileurl", file);
+                const formData = new FormData();
+                formData.append("profileurl", file);
 
                 const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/updateprofilepicture`, {
-                    method: `PUT`,
+                    method: 'PUT',
                     credentials: "include",
-                    body: data
+                    body: formData
                 });
-                const data1 = await response.json();
-                alert(data1.message);
-                console.log("Updating profile image...");
-                closeAllModals();
+                const data = await response.json();
+
+                // Update local state immediately with the new profile URL
+                setUserData(prev => ({
+                    ...prev,
+                    profile_url: data.profile_url
+                }));
+
+                // Trigger global refresh
                 setrefpost(c => c + 1);
+
+                // Close modal and show success message
+                setIsLoading(false);
+                closeAllModals();
+                alert(data.message || "Profile picture updated");
             } catch (error) {
                 console.error("Error updating profile image:", error);
                 alert("Failed to update profile image");
@@ -72,20 +120,17 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
             try {
                 const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/changeusername`, {
                     method: "PUT",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     credentials: "include",
                     body: JSON.stringify({ name: newUsername })
                 });
                 const data = await response.json();
 
-                if (data.message == "Name too short" || data.message == "user name already exists") {
+                if (data.message === "Name too short" || data.message === "user name already exists") {
                     setmsg(data.message);
                     setIsLoading(false);
                 } else {
                     alert(data.message);
-                    console.log("Updating username to:", newUsername);
                     closeAllModals();
                     setrefpost(c => c + 1);
                 }
@@ -104,20 +149,17 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
             try {
                 const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/changepassword`, {
                     method: "PUT",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     credentials: "include",
                     body: JSON.stringify({ currentPassword, newPassword })
                 });
                 const data = await response.json();
 
-                if (data.message == "incorrect oldcurrent password") {
+                if (data.message === "incorrect oldcurrent password") {
                     setmsg(data.message);
                     setIsLoading(false);
                 } else {
                     alert(data.message);
-                    console.log("Updating password...");
                     closeAllModals();
                     setrefpost(c => c + 1);
                 }
@@ -129,186 +171,272 @@ function Profile({ showProfileModal, setShowProfileModal, setrefpost }) {
         }
     };
 
-    // Don't render anything if showProfileModal is false
-    if (!showProfileModal) {
-        return null;
-    }
-
-    // Main Profile Modal - always shown when showProfileModal is true
     return (
-        <div className="profile-modal-overlay">
-            <div className="profile-modal-content">
-                {/* Loading Overlay - separate div with higher z-index */}
+        <div className="w-full min-h-screen bg-white dark:bg-black text-black dark:text-white">
+            {/* Sticky Header */}
+            <div className="sticky top-0 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800/60 p-4 flex items-center gap-4">
+                <button
+                    onClick={activeModal ? () => setActiveModal(null) : goHome}
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+                >
+                    <ArrowLeft size={22} />
+                </button>
+                <h2 className="text-xl font-bold">{activeModal ? 'Edit Details' : 'Settings'}</h2>
+            </div>
+
+            <div className="max-w-2xl mx-auto relative px-4 py-6">
+                {/* Global Loading Overlay */}
                 {isLoading && (
-                    <div className="loading-overlay">
-                        <div className="loading-spinner"></div>
-                        <p>Updating...</p>
+                    <div className="fixed inset-0 z-50 bg-white/60 dark:bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center p-20">
+                        <div className="bg-white dark:bg-gray-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center">
+                            <Loader2 className="animate-spin mb-4 text-blue-500" size={40} />
+                            <p className="font-bold text-lg">Updating...</p>
+                        </div>
                     </div>
                 )}
 
-                {/* Profile Image Update Modal */}
+                {/* Profile Image Update View */}
                 {activeModal === 'image' && (
-                    <>
-                        <div className="postclose">
-                            <button onClick={() => setActiveModal(null)} disabled={isLoading}>✕</button>
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="mb-6">
+                            <h3 className="text-2xl font-black">Change Profile Picture</h3>
+                            <p className="text-gray-500">Update your account's public avatar</p>
                         </div>
 
-                        <div className="posttitle">
-                            <p>Change Profile Picture</p>
-                            <div className="upload-button">
+                        <div className="flex flex-col items-center gap-8 mb-10 py-8 bg-gray-50 dark:bg-gray-900/50 rounded-3xl border border-gray-100 dark:border-gray-800">
+                            <div className="w-48 h-48 rounded-full bg-white dark:bg-black flex items-center justify-center border-4 border-white dark:border-gray-800 shadow-xl overflow-hidden relative group">
+                                {fileInputRef.current?.files[0] ? (
+                                    <span className="text-xs text-blue-500 font-bold">Image Selected</span>
+                                ) : (
+                                    <img
+                                        src={userData?.profile_url || "https://res.cloudinary.com/dbqdx1m4t/image/upload/v1771181818/profile_pics/nwirmfxg3fi59tqnxyyj.jpg"}
+                                        className="w-full h-full object-cover"
+                                        alt="Current Profile"
+                                    />
+                                )}
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" onClick={() => fileInputRef.current.click()}>
+                                    <Upload size={32} className="text-white" />
+                                </div>
+                            </div>
+
+                            <div className="w-full max-w-sm px-6">
                                 <input
                                     type='file'
                                     ref={fileInputRef}
-                                    onChange={handleFileSelect}
+                                    onChange={(e) => {
+                                        setmsg(null);
+                                        if (e.target.files[0]) setmsg("File: " + e.target.files[0].name);
+                                    }}
                                     accept="image/*"
-                                    style={{ display: 'none' }}
-                                    disabled={isLoading}
+                                    className="hidden"
                                 />
-                                <button onClick={() => fileInputRef.current.click()} disabled={isLoading}>
-                                    Choose Image
+                                <button
+                                    onClick={() => fileInputRef.current.click()}
+                                    className="w-full py-4 bg-white dark:bg-black text-black dark:text-white rounded-2xl font-bold border border-gray-200 dark:border-gray-800 hover:border-blue-500 transition-all shadow-sm"
+                                >
+                                    Choose New Image
                                 </button>
-                                <p style={{ fontSize: '12px', color: '#666', textAlign: 'center', marginTop: '10px' }}>
-                                    Recommended: Square image, max 5MB
-                                </p>
+                                {msg && <p className="text-center mt-3 text-sm font-medium text-blue-500">{msg}</p>}
                             </div>
                         </div>
 
-                        <div className="postbuttons">
-                            <button onClick={() => setActiveModal(null)} disabled={isLoading}>Cancel</button>
-                            <button onClick={updateProfileImage} disabled={isLoading}>
-                                {isLoading ? 'Updating...' : 'Update Picture'}
-                            </button>
+                        <div className="flex flex-col gap-4 max-w-md mx-auto footer-spacing">
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => setActiveModal(null)}
+                                    className="flex-1 py-4 bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 rounded-2xl font-bold hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={updateProfileImage}
+                                    className="flex-1 py-4 bg-blue-500 text-white rounded-2xl font-bold hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/20"
+                                >
+                                    Save Changes
+                                </button>
+                            </div>
+                            {userData?.profile_url && userData.profile_url !== "https://res.cloudinary.com/dbqdx1m4t/image/upload/v1771181818/profile_pics/nwirmfxg3fi59tqnxyyj.jpg" && (
+                                <button
+                                    onClick={removeProfileImage}
+                                    className="w-full py-3 bg-red-50 dark:bg-red-900/10 text-red-500 rounded-2xl font-bold border border-red-100 dark:border-red-900/20 hover:bg-red-100 transition-all flex items-center justify-center gap-2"
+                                >
+                                    <Trash2 size={18} />
+                                    Remove Current Photo
+                                </button>
+                            )}
                         </div>
-                    </>
+                    </div>
                 )}
 
-                {/* Username Update Modal */}
+                {/* Username Update View */}
                 {activeModal === 'username' && (
-                    <>
-                        <div className="postclose">
-                            <button onClick={() => setActiveModal(null)} disabled={isLoading}>✕</button>
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="mb-8">
+                            <h3 className="text-2xl font-black">Change Username</h3>
+                            <p className="text-gray-500">How you appear to others on TweetsApp</p>
                         </div>
 
-                        <div className="postbody">
-                            <p>New Username</p>
-                            <input
-                                type="text"
-                                placeholder="Enter new username"
-                                value={newUsername}
-                                onChange={(e) => setNewUsername(e.target.value)}
-                                disabled={isLoading}
-                            />
-                            <div>{msg}</div>
-                            <div className="error-msg-user"></div>
+                        <div className="space-y-6 mb-10 max-w-md">
+                            <div className="space-y-2">
+                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 ml-1">New Display Name</label>
+                                <input
+                                    type="text"
+                                    placeholder="Choose a new unique username"
+                                    value={newUsername}
+                                    onChange={(e) => setNewUsername(e.target.value)}
+                                    className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium text-lg"
+                                />
+                            </div>
+                            {msg && <div className="p-4 bg-red-50 dark:bg-red-900/10 text-red-500 text-sm font-bold rounded-xl border border-red-100 dark:border-red-900/20">{msg}</div>}
                         </div>
 
-                        <div className="postbuttons">
-                            <button onClick={() => setActiveModal(null)} disabled={isLoading}>Cancel</button>
-                            <button onClick={updateUsername} disabled={isLoading}>
-                                {isLoading ? 'Updating...' : 'Update Username'}
+                        <div className="flex gap-4 max-w-md">
+                            <button
+                                onClick={() => setActiveModal(null)}
+                                className="flex-1 py-4 bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 rounded-2xl font-bold hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={updateUsername}
+                                className="flex-1 py-4 bg-blue-500 text-white rounded-2xl font-bold hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/20"
+                            >
+                                Save Changes
                             </button>
                         </div>
-                    </>
+                    </div>
                 )}
 
-                {/* Password Update Modal */}
+                {/* Password Update View */}
                 {activeModal === 'password' && (
-                    <>
-                        <div className="postclose">
-                            <button onClick={() => setActiveModal(null)} disabled={isLoading}>✕</button>
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="mb-8">
+                            <h3 className="text-2xl font-black">Account Security</h3>
+                            <p className="text-gray-500">Secure your account with a strong password</p>
                         </div>
 
-                        <div className="posttag">
-                            <p>Current Password</p>
-                            <input
-                                type="password"
-                                placeholder="Enter current password"
-                                value={currentPassword}
-                                onChange={(e) => setCurrentPassword(e.target.value)}
-                                disabled={isLoading}
-                            />
-                            <div>{msg}</div>
-                            <div className="error-msg-password"></div>
+                        <div className="space-y-6 mb-10 max-w-md">
+                            <div className="space-y-2">
+                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 ml-1">Current Password</label>
+                                <input
+                                    type="password"
+                                    placeholder="••••••••"
+                                    value={currentPassword}
+                                    onChange={(e) => setCurrentPassword(e.target.value)}
+                                    className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium text-lg"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 ml-1">New Password</label>
+                                <input
+                                    type="password"
+                                    placeholder="••••••••"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium text-lg"
+                                />
+                            </div>
+                            {msg && <div className="p-4 bg-red-50 dark:bg-red-900/10 text-red-500 text-sm font-bold rounded-xl border border-red-100 dark:border-red-900/20">{msg}</div>}
                         </div>
 
-                        <div className="posttag">
-                            <p>New Password</p>
-                            <input
-                                type="password"
-                                placeholder="Enter new password"
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                disabled={isLoading}
-                            />
-                            <div className="error-msg-password"></div>
-                        </div>
-                        <div className="postbuttons">
-                            <button onClick={() => setActiveModal(null)} disabled={isLoading}>Cancel</button>
-                            <button onClick={updatePassword} disabled={isLoading}>
-                                {isLoading ? 'Updating...' : 'Update Password'}
+                        <div className="flex gap-4 max-w-md">
+                            <button
+                                onClick={() => setActiveModal(null)}
+                                className="flex-1 py-4 bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 rounded-2xl font-bold hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={updatePassword}
+                                className="flex-1 py-4 bg-blue-500 text-white rounded-2xl font-bold hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/20"
+                            >
+                                Update Password
                             </button>
                         </div>
-                    </>
+                    </div>
                 )}
 
                 {/* Main Menu - shown when no activeModal is selected */}
                 {!activeModal && (
-                    <>
-                        <div className="postclose">
-                            <button onClick={closeAllModals} disabled={isLoading}>✕</button>
-                        </div>
-
-                        <div className="profile-menu">
-                            <h2 style={{ textAlign: 'center', marginBottom: '30px', color: '#333' }}>
-                                Update Profile
-                            </h2>
-
-                            <div className="profile-options">
+                    <div className="animate-in fade-in duration-500">
+                        {/* User Preview Card */}
+                        <div className="mb-12 p-8 rounded-[2.5rem] bg-gradient-to-br from-blue-500/10 via-transparent to-indigo-500/5 dark:from-blue-500/20 dark:to-gray-900/40 border border-blue-100/30 dark:border-gray-800/50 shadow-sm flex flex-col items-center text-center">
+                            <div className="relative group mb-6">
+                                <img
+                                    src={userData?.profile_url || "https://res.cloudinary.com/dbqdx1m4t/image/upload/v1771181818/profile_pics/nwirmfxg3fi59tqnxyyj.jpg"}
+                                    alt="Profile"
+                                    className="w-32 h-32 rounded-full object-cover border-4 border-white dark:border-gray-800 shadow-2xl transition-transform group-hover:scale-105"
+                                />
                                 <button
-                                    className="profile-option-btn"
                                     onClick={() => openModal('image')}
-                                    disabled={isLoading}
+                                    className="absolute bottom-1 right-1 p-2.5 bg-blue-500 text-white rounded-full shadow-xl hover:bg-blue-600 transition-all transform hover:scale-110 active:scale-95 border-4 border-white dark:border-gray-800"
                                 >
-                                    <div className="option-icon"><CircleUser /></div>
-                                    <div className="option-text">
-                                        <h3>Change Profile Image</h3>
-                                        <p>Upload a new profile picture</p>
-                                    </div>
-                                    <div className="option-arrow">→</div>
-                                </button>
-
-                                <button
-                                    className="profile-option-btn"
-                                    onClick={() => openModal('username')}
-                                    disabled={isLoading}
-                                >
-                                    <div className="option-icon"><UserPen /></div>
-                                    <div className="option-text">
-                                        <h3>Change Username</h3>
-                                        <p>Update your display name</p>
-                                    </div>
-                                    <div className="option-arrow">→</div>
-                                </button>
-
-                                <button
-                                    className="profile-option-btn"
-                                    onClick={() => openModal('password')}
-                                    disabled={isLoading}
-                                >
-                                    <div className="option-icon"><LockKeyhole /></div>
-                                    <div className="option-text">
-                                        <h3>Change Password</h3>
-                                        <p>Set a new password</p>
-                                    </div>
-                                    <div className="option-arrow">→</div>
+                                    <UserPen size={18} />
                                 </button>
                             </div>
-
-                            <div className="postbuttons">
-                                <button onClick={closeAllModals} disabled={isLoading}>Close</button>
-                            </div>
+                            <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-2 tracking-tight">
+                                {userData?.name || "Loading..."}
+                            </h2>
+                            <p className="text-blue-500 font-bold px-4 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-full text-sm">
+                                @{userData?.name?.toLowerCase().replace(/\s/g, '') || "tweetsapp_user"}
+                            </p>
                         </div>
-                    </>
+
+                        <div className="mb-8 ml-2">
+                            <h3 className="text-2xl font-black mb-2 tracking-tight">Account Settings</h3>
+                            <p className="text-gray-500 text-lg">Update your profile information and security.</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4">
+                            <button
+                                className="flex items-center gap-6 p-6 rounded-3xl bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-100 dark:border-gray-800 transition-all group text-left"
+                                onClick={() => openModal('image')}
+                            >
+                                <div className="p-4 bg-white dark:bg-black rounded-2xl border border-gray-200 dark:border-gray-700 group-hover:border-blue-500 transition-colors shadow-sm">
+                                    <CircleUser size={28} className="text-gray-600 dark:text-gray-400 group-hover:text-blue-500" />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="font-bold text-xl">Profile Picture</h3>
+                                    <p className="text-gray-500 dark:text-gray-400">Change your public avatar</p>
+                                </div>
+                                <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-black border border-gray-100 dark:border-gray-800 group-hover:translate-x-1 transition-all">
+                                    <ChevronRight size={20} className="text-gray-400 group-hover:text-blue-500" />
+                                </div>
+                            </button>
+
+                            <button
+                                className="flex items-center gap-6 p-6 rounded-3xl bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-100 dark:border-gray-800 transition-all group text-left"
+                                onClick={() => openModal('username')}
+                            >
+                                <div className="p-4 bg-white dark:bg-black rounded-2xl border border-gray-200 dark:border-gray-700 group-hover:border-blue-500 transition-colors shadow-sm">
+                                    <UserPen size={28} className="text-gray-600 dark:text-gray-400 group-hover:text-blue-500" />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="font-bold text-xl">Display Name</h3>
+                                    <p className="text-gray-500 dark:text-gray-400">Change how others see you</p>
+                                </div>
+                                <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-black border border-gray-100 dark:border-gray-800 group-hover:translate-x-1 transition-all">
+                                    <ChevronRight size={20} className="text-gray-400 group-hover:text-blue-500" />
+                                </div>
+                            </button>
+
+                            <button
+                                className="flex items-center gap-6 p-6 rounded-3xl bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-100 dark:border-gray-800 transition-all group text-left"
+                                onClick={() => openModal('password')}
+                            >
+                                <div className="p-4 bg-white dark:bg-black rounded-2xl border border-gray-200 dark:border-gray-700 group-hover:border-blue-500 transition-colors shadow-sm">
+                                    <LockKeyhole size={28} className="text-gray-600 dark:text-gray-400 group-hover:text-blue-500" />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="font-bold text-xl">Account Security</h3>
+                                    <p className="text-gray-500 dark:text-gray-400">Update your account password</p>
+                                </div>
+                                <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-black border border-gray-100 dark:border-gray-800 group-hover:translate-x-1 transition-all">
+                                    <ChevronRight size={20} className="text-gray-400 group-hover:text-blue-500" />
+                                </div>
+                            </button>
+                        </div>
+                    </div>
                 )}
             </div>
         </div>

@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import Addpost from "./post";
+import { ArrowLeft, User } from "lucide-react";
 
 function YourPost({ you_post, setyou, setrefpost }) {
     const [pos, setpos] = useState([]);
@@ -12,6 +13,7 @@ function YourPost({ you_post, setyou, setrefpost }) {
     const name = useRef(null);
     const profile = useRef(null);
     const observer = useRef();
+
     const lastPostRef = useCallback(node => {
         if (loading) return;
         if (observer.current) observer.current.disconnect();
@@ -99,49 +101,83 @@ function YourPost({ you_post, setyou, setrefpost }) {
     };
 
     return (
-        <div>
-            <div>
-                <div>
-                    Profile: <img src={profile.current} alt="profile" className="profile-pic" />
+        <div className="min-h-screen">
+            <div className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 px-4 py-3.5 flex items-center gap-4">
+                <button
+                    onClick={handleBackClick}
+                    className="p-2.5 -ml-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl transition-all text-slate-500 hover:text-indigo-600"
+                    aria-label="Go back"
+                >
+                    <ArrowLeft size={22} />
+                </button>
+
+                <div className="flex items-center gap-3">
+                    {profile.current ? (
+                        <img
+                            src={profile.current}
+                            alt="profile"
+                            className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-800"
+                        />
+                    ) : (
+                        <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+                            <User size={20} className="text-gray-500" />
+                        </div>
+                    )}
+                    <div>
+                        <h2 className="font-bold text-lg leading-tight">
+                            {name.current || "Your Profile"}
+                        </h2>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {totalPosts} posts
+                        </span>
+                    </div>
                 </div>
-                <div>Username: {name.current}</div>
-                <div>Total posts: {totalPosts}</div>
-                <button onClick={handleBackClick}>Back</button>
             </div>
 
-            <div>
-                <div>
-                    {initialLoad ? (
-                        <p>Loading posts...</p>
-                    ) : pos.length > 0 ? (
-                        pos.map((post, index) => {
-                            if (index === pos.length - 1) {
-                                return (
-                                    <div ref={lastPostRef} key={post._id}>
-                                        <Addpost
-                                            p1={post}
-                                            del={true}
-                                            onDelete={handleDeletePost}
-                                        />
-                                    </div>
-                                );
-                            }
-                            return (
+            <div className="p-4 md:p-8 max-w-4xl mx-auto">
+                {initialLoad ? (
+                    <div className="flex flex-col items-center justify-center py-32">
+                        <div className="w-10 h-10 border-4 border-slate-200 border-t-slate-600 dark:border-zinc-800 dark:border-t-zinc-400 rounded-full animate-spin mb-6"></div>
+                        <p className="text-slate-500 font-medium animate-pulse">Designing your universe...</p>
+                    </div>
+                ) : pos.length > 0 ? (
+                    <div className="flex flex-col gap-6">
+                        {pos.map((post, index) => (
+                            <div
+                                key={post._id}
+                                ref={index === pos.length - 1 ? lastPostRef : null}
+                            >
                                 <Addpost
-                                    key={post._id}
                                     p1={post}
                                     del={true}
                                     onDelete={handleDeletePost}
                                 />
-                            );
-                        })
-                    ) : (
-                        <p>No posts to display</p>
-                    )}
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-24 bg-white/50 dark:bg-slate-900/50 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-800">
+                        <div className="inline-block p-6 bg-indigo-50 dark:bg-indigo-500/10 rounded-3xl mb-6 text-indigo-600 dark:text-indigo-400">
+                            <User size={48} strokeWidth={1.5} />
+                        </div>
+                        <h3 className="text-2xl font-black mb-3 tracking-tight">Pure Silence</h3>
+                        <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto font-medium">
+                            Your timeline is a blank canvas. Start sharing your thoughts with the world!
+                        </p>
+                    </div>
+                )}
 
-                    {loading && <p>Loading more posts...</p>}
-                    {!hasMore && pos.length > 0 && <p>No more posts to load</p>}
-                </div>
+                {loading && !initialLoad && (
+                    <div className="py-6 text-center">
+                        <div className="inline-block w-6 h-6 border-2 border-gray-200 border-t-black dark:border-gray-800 dark:border-t-white rounded-full animate-spin"></div>
+                    </div>
+                )}
+
+                {!hasMore && pos.length > 0 && (
+                    <div className="py-8 text-center text-sm text-gray-400 dark:text-gray-600">
+                        No more posts to load
+                    </div>
+                )}
             </div>
         </div>
     );

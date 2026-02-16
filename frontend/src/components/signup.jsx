@@ -1,29 +1,30 @@
-import { useRef } from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 function Signup({ setlogin }) {
     const inputuser = useRef(null);
     const inputemail = useRef(null);
-    const [d1, setd1] = useState("");
-    const [d2, setd2] = useState("");
-    const [d3, setd3] = useState("");
     const inputpass = useRef(null);
-    const [show, setshow] = useState(false);
-    async function send() {
+
+    const [error, setError] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+
+    async function send(e) {
+        e.preventDefault();
         const name = inputuser.current.value;
         const email = inputemail.current.value;
         const password = inputpass.current.value;
-        let s1 = "name is required", s2 = "email is required", s3 = "password is required";
-        if (name == "") {
-            setd1(s1);
+
+        if (!name || !email || !password) {
+            setError("All fields are required");
+            return;
         }
-        if (email == "") {
-            setd2(s2);
-        }
-        if (password == "") {
-            setd3(s3);
-        }
-        else {
+
+        setError("");
+        setLoading(true);
+
+        try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/signup`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -31,39 +32,81 @@ function Signup({ setlogin }) {
             });
 
             const data = await response.json();
-            if (data.message == "User signed up") {
+
+            if (response.ok && data.message === "User signed up") {
                 setlogin(true);
+            } else {
+                setError(data.message || "Signup failed");
             }
-            else {
-                setd1(data.message);
-            }
+        } catch (err) {
+            setError("An error occurred. Please try again.");
+        } finally {
+            setLoading(false);
         }
     }
-    return <>
-        <br />
-        username
-        <input
-            ref={inputuser}
-            type="text"
-            placeholder="your username"
-        />
-        <div>{d1}</div>
-        email
-        <input
-            ref={inputemail}
-            type="text"
-            placeholder="your email"
-        />
-        <div >{d2}</div>
-        password
-        <input
-            ref={inputpass}
-            type={show ? "text" : "password"}
-            placeholder="your password"
-        />
-        <div>{d3}</div>
-        <button type="button" onClick={() => setshow(!show)}>{show ? "Hide" : "Show"}</button>
-        <button type="button" onClick={send}>Submit</button>
-    </>
+
+    return (
+        <form onSubmit={send} className="space-y-6">
+            <div className="space-y-2">
+                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-700 dark:text-gray-300">
+                    Username
+                </label>
+                <input
+                    ref={inputuser}
+                    type="text"
+                    className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:ring-offset-gray-950 dark:focus-visible:ring-gray-300 dark:text-white"
+                    placeholder="name"
+                />
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-700 dark:text-gray-300">
+                    Email
+                </label>
+                <input
+                    ref={inputemail}
+                    type="email"
+                    className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:ring-offset-gray-950 dark:focus-visible:ring-gray-300 dark:text-white"
+                    placeholder="name@example.com"
+                />
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-700 dark:text-gray-300">
+                    Password
+                </label>
+                <div className="relative">
+                    <input
+                        ref={inputpass}
+                        type={showPassword ? "text" : "password"}
+                        className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:ring-offset-gray-950 dark:focus-visible:ring-gray-300 dark:text-white pr-10"
+                        placeholder="••••••••"
+                    />
+                    <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                </div>
+            </div>
+
+            {error && (
+                <div className="text-sm font-medium text-red-500 dark:text-red-400">
+                    {error}
+                </div>
+            )}
+
+            <button
+                type="submit"
+                disabled={loading}
+                className="inline-flex h-10 w-full items-center justify-center rounded-md bg-black dark:bg-white px-4 py-2 text-sm font-medium text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 transition-colors"
+            >
+                {loading ? "Signing up..." : "Sign Up"}
+            </button>
+        </form>
+    );
 }
-export default Signup
+
+export default Signup;

@@ -13,36 +13,44 @@ const uploadprofile = multer({
 });
 
 
-router.put("/",auth, uploadprofile.single("profileurl") ,async (req, res) => {
+router.put("/", auth, uploadprofile.single("profileurl"), async (req, res) => {
 
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
-
-    const uploadResult = await new Promise((resolve, reject) => {
-      cloudinary.uploader.upload_stream(
-        {
-          folder: "profile_pics",
-          transformation: [
-            { width: 300, height: 300, crop: "fill" },
-            { quality: "auto", fetch_format: "auto" }
-          ]
-        },
-        (err, result) => {
-          if (err) reject(err);
-          else resolve(result);
-        }
-      ).end(req.file.buffer);
-    });
-
+  // If no file, revert to default
+  if (!req.file) {
+    const defaultUrl = "https://res.cloudinary.com/dbqdx1m4t/image/upload/v1771181818/profile_pics/nwirmfxg3fi59tqnxyyj.jpg";
     await userModel.findByIdAndUpdate(req.userId, {
-      profile_url: uploadResult.secure_url
+      profile_url: defaultUrl
     });
-
-    res.json({
-      message: "Profile picture updated",
-      profile_url: uploadResult.secure_url
+    return res.json({
+      message: "Profile picture removed (reverted to default)",
+      profile_url: defaultUrl
     });
   }
+
+  const uploadResult = await new Promise((resolve, reject) => {
+    cloudinary.uploader.upload_stream(
+      {
+        folder: "profile_pics",
+        transformation: [
+          { width: 300, height: 300, crop: "fill" },
+          { quality: "auto", fetch_format: "auto" }
+        ]
+      },
+      (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      }
+    ).end(req.file.buffer);
+  });
+
+  await userModel.findByIdAndUpdate(req.userId, {
+    profile_url: uploadResult.secure_url
+  });
+
+  res.json({
+    message: "Profile picture updated",
+    profile_url: uploadResult.secure_url
+  });
+}
 );
-module.exports = {uploadprofileRoute : router};
+module.exports = { uploadprofileRoute: router };

@@ -19,7 +19,6 @@ function Share({ post, isOpen, onClose }) {
     if (!post) return null;
 
     const shareUrl = `${window.location.origin}/post/${post._id}`;
-    const shareText = `Check out this post: ${post.title || post.description || 'Amazing post!'}`;
 
     const handleCopy = () => {
         navigator.clipboard.writeText(shareUrl).then(() => {
@@ -30,133 +29,62 @@ function Share({ post, isOpen, onClose }) {
         });
     };
 
-    const overlayStyle = {
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        backdropFilter: 'blur(4px)',
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        opacity: isOpen ? 1 : 0,
-        transition: 'opacity 0.3s ease-in-out',
-        pointerEvents: isOpen ? 'auto' : 'none'
-    };
-
-    const modalStyle = {
-        backgroundColor: '#ffffff',
-        borderRadius: '16px',
-        width: '90%',
-        maxWidth: '420px',
-        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-        transform: isOpen ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(20px)',
-        transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-        overflow: 'hidden',
-        border: '1px solid rgba(0,0,0,0.05)'
-    };
-
-    const headerStyle = {
-        padding: '16px 20px',
-        borderBottom: '1px solid #f0f0f0',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: '#fafafa'
-    };
-
-    const inputContainerStyle = {
-        display: 'flex',
-        alignItems: 'center',
-        backgroundColor: '#f3f4f6',
-        borderRadius: '8px',
-        padding: '4px',
-        border: '1px solid #e5e7eb',
-        marginTop: '0'
-    };
-
-
-
     return (
-        <div style={overlayStyle} onClick={onClose}>
-            <div style={modalStyle} onClick={e => e.stopPropagation()}>
-                <div style={headerStyle}>
-                    <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 600, color: '#1f2937' }}>Share Post</h3>
+        <div
+            className={`fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}
+            onClick={onClose}
+        >
+            <div
+                className={`bg-white dark:bg-black w-full max-w-sm rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden transform transition-transform duration-300 ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}
+                onClick={e => e.stopPropagation()}
+            >
+                <div className="flex justify-between items-center p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Share Post</h3>
                     <button
                         onClick={onClose}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', borderRadius: '50%', display: 'flex' }}
+                        className="p-1 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors"
                     >
-                        <X size={20} color="#6b7280" />
+                        <X size={20} className="text-gray-500" />
                     </button>
                 </div>
 
-                <div style={{ padding: '10px' }}>
-                    <div>
-                        {post.userId && (
-                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
-                                <img
-                                    src={post.userId.profile_url || "/default-avatar.png"}
-                                    alt="profile"
-                                    style={{
-                                        width: '40px',
-                                        height: '40px',
-                                        borderRadius: '50%',
-                                        marginRight: '12px',
-                                        objectFit: 'cover'
-                                    }}
-                                />
-                                <span style={{ fontSize: '1rem', fontWeight: 600, color: '#1f2937' }}>{post.userId.name}</span>
-                            </div>
-                        )}
-                        {post.title && (
-                            <div style={{ marginBottom: '16px' }}>
-                                <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#1f2937' }}>{post.title}</p>
-                            </div>
-                        )}
-                        <p style={{ margin: '0 0 8px 0', fontSize: '0.875rem', color: '#6b7280', fontWeight: 500 }}>Subject link</p>
-                        <div style={inputContainerStyle}>
-                            <input
-                                type="text"
-                                readOnly
-                                value={shareUrl}
-                                style={{
-                                    flex: 1,
-                                    background: 'transparent',
-                                    border: 'none',
-                                    outline: 'none',
-                                    padding: '8px 12px',
-                                    fontSize: '0.875rem',
-                                    color: '#374151',
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis'
-                                }}
+                <div className="p-4">
+                    {post.userId && (
+                        <div className="flex items-center gap-3 mb-4">
+                            <img
+                                src={post.userId.profile_url || "https://res.cloudinary.com/dbqdx1m4t/image/upload/v1771181818/profile_pics/nwirmfxg3fi59tqnxyyj.jpg"}
+                                alt="profile"
+                                className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-800"
                             />
-                            <button
-                                onClick={handleCopy}
-                                style={{
-                                    padding: '8px 16px',
-                                    borderRadius: '6px',
-                                    border: 'none',
-                                    backgroundColor: copied ? '#dcfce7' : '#ffffff',
-                                    color: copied ? '#166534' : '#374151',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                    fontSize: '0.875rem',
-                                    fontWeight: 500,
-                                    boxShadow: copied ? 'none' : '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-                                    transition: 'all 0.2s'
-                                }}
-                            >
-                                {copied ? <Check size={16} /> : <Copy size={16} />}
-                                {copied ? 'Copied' : 'Copy'}
-                            </button>
+                            <span className="font-semibold text-gray-900 dark:text-gray-100">{post.userId.name}</span>
                         </div>
+                    )}
+
+                    {post.title && (
+                        <div className="mb-4">
+                            <p className="font-semibold text-gray-900 dark:text-gray-100 line-clamp-2">{post.title}</p>
+                        </div>
+                    )}
+
+                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mb-2">Subject link</p>
+
+                    <div className="flex items-center bg-gray-100 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-1">
+                        <input
+                            type="text"
+                            readOnly
+                            value={shareUrl}
+                            className="flex-1 bg-transparent border-none outline-none px-3 py-2 text-sm text-gray-700 dark:text-gray-300 truncate"
+                        />
+                        <button
+                            onClick={handleCopy}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${copied
+                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                : 'bg-white dark:bg-black text-gray-700 dark:text-gray-300 shadow-sm hover:shadow'
+                                }`}
+                        >
+                            {copied ? <Check size={14} /> : <Copy size={14} />}
+                            {copied ? 'Copied' : 'Copy'}
+                        </button>
                     </div>
                 </div>
             </div>
@@ -165,3 +93,4 @@ function Share({ post, isOpen, onClose }) {
 };
 
 export default Share;
+

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Addpost from "./post";
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, User } from 'lucide-react';
 
 function Username({ username, sethome }) {
     const [posts, setPosts] = useState([]);
@@ -8,6 +8,8 @@ function Username({ username, sethome }) {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [initialLoad, setInitialLoad] = useState(true);
+
+    const [totalPosts, setTotalPosts] = useState(0);
 
     const observer = useRef();
     const lastPostRef = useCallback(node => {
@@ -33,14 +35,16 @@ function Username({ username, sethome }) {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log("User posts data:", data);
 
-                // Robust data handling like in YourPost
+                // Robust data handling
                 let postsArray = [];
-                if (Array.isArray(data)) {
-                    postsArray = data;
-                } else if (data.posts && Array.isArray(data.posts)) {
+                if (data.posts && Array.isArray(data.posts)) {
                     postsArray = data.posts;
+                    if (data.totalPosts !== undefined) {
+                        setTotalPosts(data.totalPosts);
+                    }
+                } else if (Array.isArray(data)) {
+                    postsArray = data;
                 } else if (Array.isArray(data.data)) {
                     postsArray = data.data;
                 }
@@ -65,6 +69,7 @@ function Username({ username, sethome }) {
     useEffect(() => {
         // Reset state when username changes
         setPosts([]);
+        setTotalPosts(0);
         setPage(1);
         setHasMore(true);
         setInitialLoad(true);
@@ -82,68 +87,83 @@ function Username({ username, sethome }) {
     const userProfile = posts.length > 0 && posts[0].userId ? posts[0].userId : null;
 
     return (
-        <div>
-            <div style={{
-                padding: "20px",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                borderBottom: "1px solid #777",
-                backgroundColor: "inherit"
-            }}>
+        <div className="min-h-screen">
+            <div className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 px-4 py-3.5 flex items-center gap-4">
                 <button
                     onClick={sethome}
-                    style={{
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        color: "inherit"
-                    }}
+                    className="p-2.5 -ml-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl transition-all text-slate-500 hover:text-indigo-600"
+                    aria-label="Go back"
                 >
-                    <ArrowLeft size={24} />
-                    <span style={{ marginLeft: "5px" }}>Back</span>
+                    <ArrowLeft size={22} />
                 </button>
 
-                {userProfile && (
-                    <div style={{ display: "flex", alignItems: "center", marginLeft: "10px" }}>
+                <div className="flex items-center gap-3">
+                    {userProfile ? (
                         <img
-                            src={userProfile.profile_url || "https://img.freepik.com/premium-vector/user-profile-icon-flat-style-member-avatar-vector-illustration-isolated-background-human-permission-sign-business-concept_157943-15752.jpg"}
+                            src={userProfile.profile_url || "https://res.cloudinary.com/dbqdx1m4t/image/upload/v1771181818/profile_pics/nwirmfxg3fi59tqnxyyj.jpg"}
                             alt={userProfile.name}
-                            style={{ width: "40px", height: "40px", borderRadius: "50%", marginRight: "10px" }}
+                            className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-800"
                         />
-                        <h2 style={{ margin: 0 }}>{userProfile.name}</h2>
+                    ) : (
+                        <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+                            <User size={20} className="text-gray-500" />
+                        </div>
+                    )}
+                    <div>
+                        <h2 className="font-bold text-lg leading-tight">
+                            {userProfile ? userProfile.name : username}
+                        </h2>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {totalPosts > 0 ? `${totalPosts} Posts` : initialLoad ? 'Calculating...' : 'No Posts'}
+                        </span>
                     </div>
-                )}
-                {!userProfile && <h2 style={{ margin: 0 }}>Posts by {username}</h2>}
+                </div>
             </div>
 
-            <div style={{ padding: "20px" }}>
+            <div className="p-4 md:p-8 max-w-4xl mx-auto">
                 {initialLoad ? (
-                    <div style={{ textAlign: "center" }}>Loading posts...</div>
+                    <div className="flex flex-col items-center justify-center py-32">
+                        <div className="w-10 h-10 border-4 border-slate-200 border-t-slate-600 dark:border-zinc-800 dark:border-t-zinc-400 rounded-full animate-spin mb-6"></div>
+                        <p className="text-slate-500 font-medium">Discovering @{username}...</p>
+                    </div>
                 ) : posts.length > 0 ? (
-                    posts.map((post, index) => {
-                        if (index === posts.length - 1) {
-                            return (
-                                <div ref={lastPostRef} key={post._id || index}>
-                                    <Addpost p1={post} />
-                                </div>
-                            );
-                        }
-                        return (
-                            <Addpost key={post._id || index} p1={post} />
-                        );
-                    })
+                    <div className="flex flex-col gap-6">
+                        {posts.map((post, index) => (
+                            <div
+                                key={post._id || index}
+                                ref={index === posts.length - 1 ? lastPostRef : null}
+                            >
+                                <Addpost p1={post} />
+                            </div>
+                        ))}
+                    </div>
                 ) : (
-                    <div style={{ textAlign: "center" }}>No posts found for {username}</div>
+                    <div className="text-center py-24 bg-white/50 dark:bg-slate-900/50 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-800">
+                        <div className="inline-block p-6 bg-slate-100 dark:bg-slate-800 rounded-3xl mb-6 text-slate-400">
+                            <User size={48} strokeWidth={1.5} />
+                        </div>
+                        <h3 className="text-2xl font-black mb-3 tracking-tight">Quiet Profile</h3>
+                        <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto font-medium">
+                            @{username} hasn't shared any moments yet. Check back later!
+                        </p>
+                    </div>
                 )}
 
-                {loading && !initialLoad && <div style={{ textAlign: "center", padding: "10px" }}>Loading more posts...</div>}
-                {!hasMore && posts.length > 0 && <div style={{ textAlign: "center", padding: "10px", color: "#666" }}>No more posts to load</div>}
+                {loading && !initialLoad && (
+                    <div className="py-6 text-center">
+                        <div className="inline-block w-6 h-6 border-2 border-gray-200 border-t-black dark:border-gray-800 dark:border-t-white rounded-full animate-spin"></div>
+                    </div>
+                )}
+
+                {!hasMore && posts.length > 0 && (
+                    <div className="py-8 text-center text-sm text-gray-400 dark:text-gray-600">
+                        You've reached the end
+                    </div>
+                )}
             </div>
         </div>
     );
 }
 
 export default Username;
+

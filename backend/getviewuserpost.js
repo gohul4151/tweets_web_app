@@ -1,12 +1,12 @@
 const express = require('express');
-const {auth} =require('./auth');
-const {postModel}=require('./db');
-const {userModel}=require('./db');
-const { timeAgo }=require('./timeAgo');
+const { auth } = require('./auth');
+const { postModel } = require('./db');
+const { userModel } = require('./db');
+const { timeAgo } = require('./timeAgo');
 
 const router = express.Router({ mergeParams: true });
 
-router.get("/",auth,async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
     const viewuser = req.params.name;
     const user = await userModel.findOne({ name: viewuser });
@@ -17,7 +17,7 @@ router.get("/",auth,async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
     const skip = (page - 1) * limit;
-  
+
     const posts = await postModel
       .find({ _id: { $in: user.post_ids } })
       .sort({ time: -1 })
@@ -34,7 +34,10 @@ router.get("/",auth,async (req, res) => {
       timeAgo: timeAgo(post.time), // function to convert time to "time ago" format
     }));
 
-    res.json({ posts: modifiedPosts });
+    res.json({
+      posts: modifiedPosts,
+      totalPosts: user.post_ids.length
+    });
 
   } catch (err) {
     res.status(500).json({ message: "Failed to load your posts" });

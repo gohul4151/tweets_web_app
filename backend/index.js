@@ -131,7 +131,7 @@ app.post("/login", async function (req, res) {
     });
 
     if (user.profile_url == undefined) {
-      user.profile_url = "https://img.freepik.com/premium-vector/user-profile-icon-flat-style-member-avatar-vector-illustration-isolated-background-human-permission-sign-business-concept_157943-15752.jpg?semt=ais_hybrid&w=740&q=80",
+      user.profile_url = "https://res.cloudinary.com/dbqdx1m4t/image/upload/v1771181818/profile_pics/nwirmfxg3fi59tqnxyyj.jpg",
         await user.save();
     }
 
