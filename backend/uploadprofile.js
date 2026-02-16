@@ -14,13 +14,24 @@ const uploadprofile = multer({
 
 
 router.put("/", auth, uploadprofile.single("profileurl"), async (req, res) => {
+  const defaultUrl = "https://res.cloudinary.com/dbqdx1m4t/image/upload/v1771181818/profile_pics/nwirmfxg3fi59tqnxyyj.jpg";
+  const { deleteFromCloudinaryAsync } = require('./cloudinaryUtils');
+
+  // Get the user's current profile picture before updating
+  const user = await userModel.findById(req.userId);
+  const oldProfileUrl = user?.profile_url;
 
   // If no file, revert to default
   if (!req.file) {
-    const defaultUrl = "https://res.cloudinary.com/dbqdx1m4t/image/upload/v1771181818/profile_pics/nwirmfxg3fi59tqnxyyj.jpg";
     await userModel.findByIdAndUpdate(req.userId, {
       profile_url: defaultUrl
     });
+
+    // Delete old profile from Cloudinary if it's not the default
+    if (oldProfileUrl && oldProfileUrl !== defaultUrl) {
+      deleteFromCloudinaryAsync(oldProfileUrl, 'image');
+    }
+
     return res.json({
       message: "Profile picture removed (reverted to default)",
       profile_url: defaultUrl
@@ -46,6 +57,11 @@ router.put("/", auth, uploadprofile.single("profileurl"), async (req, res) => {
   await userModel.findByIdAndUpdate(req.userId, {
     profile_url: uploadResult.secure_url
   });
+
+  // Delete old profile from Cloudinary if it's not the default
+  if (oldProfileUrl && oldProfileUrl !== defaultUrl) {
+    deleteFromCloudinaryAsync(oldProfileUrl, 'image');
+  }
 
   res.json({
     message: "Profile picture updated",

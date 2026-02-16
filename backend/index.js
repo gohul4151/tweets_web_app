@@ -236,11 +236,19 @@ app.delete("/deletepost/:id", auth, async (req, res) => {
       return res.status(403).json({ message: "Not authorized to delete this post" });
     }
 
+    // Delete from database
     await postModel.findByIdAndDelete(postId);
 
     await userModel.findByIdAndUpdate(userId, {
       $pull: { post_ids: postId }
     });
+
+    // Delete media from Cloudinary asynchronously (fire-and-forget)
+    if (post.url) {
+      const { deleteFromCloudinaryAsync } = require('./cloudinaryUtils');
+      const resourceType = post.type === 'video' ? 'video' : 'image';
+      deleteFromCloudinaryAsync(post.url, resourceType);
+    }
 
     res.json({ message: "Post deleted successfully" });
 
