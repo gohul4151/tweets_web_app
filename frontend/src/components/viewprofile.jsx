@@ -48,8 +48,8 @@ function Profile({ setrefpost, refpost, goHome }) {
         if (window.confirm("Are you sure you want to remove your profile photo?")) {
             setIsLoading(true);
             try {
-                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/updateprofilepicture`, {
-                    method: 'DELETE',
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/removeprofilepicture`, {
+                    method: 'POST',
                     credentials: "include"
                 });
                 const data = await response.json();

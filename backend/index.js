@@ -344,6 +344,33 @@ app.put("/changepassword", auth, async (req, res) => {
 
 app.use("/updateprofilepicture", uploadprofileRoute);
 
+// Remove profile picture - dedicated POST route (avoids DELETE method issues on hosted platforms)
+app.post("/removeprofilepicture", auth, async (req, res) => {
+  try {
+    const defaultUrl = "https://res.cloudinary.com/dbqdx1m4t/image/upload/v1771181818/profile_pics/nwirmfxg3fi59tqnxyyj.jpg";
+    const { deleteFromCloudinaryAsync } = require('./cloudinaryUtils');
+
+    const user = await userModel.findById(req.userId);
+    const oldProfileUrl = user?.profile_url;
+
+    await userModel.findByIdAndUpdate(req.userId, {
+      profile_url: defaultUrl
+    });
+
+    if (oldProfileUrl && oldProfileUrl !== defaultUrl) {
+      deleteFromCloudinaryAsync(oldProfileUrl, 'image');
+    }
+
+    res.json({
+      message: "Profile picture removed",
+      profile_url: defaultUrl
+    });
+  } catch (err) {
+    console.error("Error removing profile picture:", err);
+    res.status(500).json({ message: "Failed to remove profile picture" });
+  }
+});
+
 // Comments route (post a comment, get parent comments )
 app.use("/post", commentRoute);
 
