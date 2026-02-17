@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowBigUp, ArrowBigDown, MessageCircle, Send, MoreVertical, X, Trash2, Reply } from 'lucide-react';
+import { ArrowBigUp, ArrowBigDown, MessageCircle, Send, MoreVertical, X, Trash2, Reply, Pencil, Loader2 } from 'lucide-react';
 import Delete from './delete';
 import Reply_delete from './reply_delete';
 import Share from './share';
@@ -11,6 +11,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
     const [getreply, setgetreply] = useState({});
     const [commentCount, setcommentCount] = useState(p1.commentCount);
     const [comment, setcomment] = useState("");
+    const [replyText, setReplyText] = useState("");
     const [error, setError] = useState(null);
     const [get_command, setget_command] = useState(null);
     const [command, setcommand] = useState(false);
@@ -22,6 +23,8 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
     const [isdisliked, setisdisliked] = useState(p1.isDisliked);
     const [read, setread] = useState(false);
     const [tag, settag] = useState(p1.tags);
+    const [title, setTitle] = useState(p1.title);
+    const [description, setDescription] = useState(p1.description);
     const [c_page, setc_page] = useState(1);
     const [Loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
@@ -29,6 +32,12 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
     const [replyingToCommentId, setReplyingToCommentId] = useState(null);
     const [showShare, setShowShare] = useState(false);
     const [authToast, setAuthToast] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editTitle, setEditTitle] = useState(p1.title || '');
+    const [editDescription, setEditDescription] = useState(p1.description || '');
+    const [editTag, setEditTag] = useState(p1.tags || '');
+    const [editLoading, setEditLoading] = useState(false);
+    const [editMessage, setEditMessage] = useState('');
 
     // Track reply pages and loading states for each comment
     const [replyPages, setReplyPages] = useState({});
@@ -37,7 +46,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
     const replyRefs = useRef({});
 
     const maxread = 150;
-    const isLongDescription = p1.description && p1.description.length > maxread;
+    const isLongDescription = description && description.length > maxread;
 
     // Helper: check if user can interact; if not, show login/signup toast
     function requireAuth() {
@@ -63,7 +72,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
                     profile.current = data.profile_url;
                 }
             } catch (e) {
-                console.log("Error fetching user profile", e);
+                // silently fail
             }
         }
         username();
@@ -92,15 +101,61 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
                 credentials: 'include'
             });
             const result = await response.json();
-            if (result) {
+            if (response.ok) {
                 if (onDelete) {
                     onDelete(p1._id);
                 }
+            } else {
+                console.error('Failed to delete post:', result.message);
             }
         } catch (error) {
             console.error('Error deleting post:', error);
         }
         setShowOptions(false);
+    };
+
+    const handleEditOpen = () => {
+        setEditTitle(title || '');
+        setEditDescription(description || '');
+        setEditTag(tag || '');
+        setEditMessage('');
+        setShowEditModal(true);
+        setShowOptions(false);
+    };
+
+    const handleEditSave = async () => {
+        setEditLoading(true);
+        setEditMessage('');
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/editpost/${p1._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    title: editTitle,
+                    description: editDescription,
+                    tags: editTag
+                })
+            });
+            const result = await response.json();
+            if (response.ok) {
+                setTitle(editTitle);
+                setDescription(editDescription);
+                settag(editTag);
+                setEditMessage('Post updated successfully!');
+                setTimeout(() => {
+                    setShowEditModal(false);
+                    setEditLoading(false);
+                }, 1000);
+            } else {
+                setEditMessage(result.message || 'Failed to update post');
+                setEditLoading(false);
+            }
+        } catch (error) {
+            console.error('Error editing post:', error);
+            setEditMessage('Network error: ' + error.message);
+            setEditLoading(false);
+        }
     };
 
     // Handle comment deletion - update UI immediately
@@ -245,19 +300,19 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
     }, [command]);
 
     async function send_reply(parentCommentId) {
-        if (!comment.trim()) return;
+        if (!replyText.trim()) return;
 
         setget_command(prev =>
-            prev.map(comment => {
-                if (comment._id === parentCommentId) {
-                    return { ...comment, repliesCount: (comment.repliesCount || 0) + 1 };
+            prev.map(c => {
+                if (c._id === parentCommentId) {
+                    return { ...c, repliesCount: (c.repliesCount || 0) + 1 };
                 }
-                return comment;
+                return c;
             })
         );
 
-        const replyText = comment;
-        setcomment(""); // Clear immediately
+        const replyContent = replyText;
+        setReplyText(""); // Clear immediately
         setReplyingToCommentId(null);
 
         try {
@@ -265,7 +320,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ text: replyText, parentCommentId: parentCommentId }),
+                body: JSON.stringify({ text: replyContent, parentCommentId: parentCommentId }),
             });
 
             if (showRepliesForComment[parentCommentId]) {
@@ -433,6 +488,12 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
                         {showOptions && (
                             <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg border border-gray-100 dark:border-gray-800 z-10 py-1">
                                 <button
+                                    onClick={handleEditOpen}
+                                    className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2"
+                                >
+                                    <Pencil size={16} /> Edit Post
+                                </button>
+                                <button
                                     onClick={handleDelete}
                                     className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2"
                                 >
@@ -446,12 +507,12 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
 
             {/* Content */}
             <div className="px-5 pb-3">
-                {p1.title && <h2 className="text-xl font-bold mb-2.5 text-slate-900 dark:text-slate-50 leading-snug tracking-tight">{p1.title}</h2>}
+                {title && <h2 className="text-xl font-bold mb-2.5 text-slate-900 dark:text-slate-50 leading-snug tracking-tight">{title}</h2>}
 
-                {p1.description && (
+                {description && (
                     <div className="text-slate-700 dark:text-slate-300 mb-3 whitespace-pre-wrap text-base leading-relaxed font-normal">
                         {read || !isLongDescription
-                            ? p1.description : `${p1.description.substring(0, maxread)}...`
+                            ? description : `${description.substring(0, maxread)}...`
                         }
                         {isLongDescription && (
                             <button
@@ -633,10 +694,10 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
                                                 <div className="mt-3 flex gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
                                                     <input
                                                         type="text"
-                                                        value={comment}
-                                                        onChange={(e) => setcomment(e.target.value)}
+                                                        value={replyText}
+                                                        onChange={(e) => setReplyText(e.target.value)}
                                                         placeholder={`Replying to ${c.userId?.name}...`}
-                                                        className="flex-1 px-4 py-2 bg-white dark:bg-black rounded-full border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all shadow-sm"
+                                                        className="flex-1 px-4 py-2 bg-white dark:bg-zinc-900 rounded-full border border-slate-200 dark:border-zinc-800 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition-all text-sm shadow-sm"
                                                         autoFocus
                                                         onKeyDown={(e) => {
                                                             if (e.key === 'Enter' && !e.shiftKey) {
@@ -647,7 +708,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
                                                     />
                                                     <button
                                                         onClick={() => send_reply(c._id)}
-                                                        disabled={!comment.trim()}
+                                                        disabled={!replyText.trim()}
                                                         className="text-xs px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full font-bold hover:opacity-90 disabled:opacity-50 transition-all shadow-sm"
                                                     >
                                                         Reply
@@ -705,6 +766,88 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
             {authToast && (
                 <div className="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-black dark:bg-white text-white dark:text-black px-6 py-3 rounded-full shadow-2xl z-[100] animate-bounce font-medium text-sm">
                     Please log in to interact!
+                </div>
+            )}
+
+            {/* Edit Post Modal */}
+            {showEditModal && (
+                <div
+                    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+                    onClick={() => { setShowEditModal(false); setEditLoading(false); setEditMessage(''); }}
+                >
+                    <div
+                        className="bg-white dark:bg-black w-full max-w-lg rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden transform transition-all animate-in zoom-in-95 duration-200"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="flex justify-between items-center p-4 border-b border-gray-100 dark:border-gray-800">
+                            <h3 className="text-xl font-bold text-black dark:text-white">Edit Post</h3>
+                            <button
+                                onClick={() => { setShowEditModal(false); setEditLoading(false); setEditMessage(''); }}
+                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors text-gray-500 hover:text-black dark:hover:text-white"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <div className="p-6 space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">Title</label>
+                                <input
+                                    type="text"
+                                    value={editTitle}
+                                    onChange={(e) => setEditTitle(e.target.value)}
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white/20 border border-transparent focus:bg-white dark:focus:bg-black transition-all font-medium text-slate-900 dark:text-slate-100"
+                                    placeholder="Enter post title"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">Description</label>
+                                <textarea
+                                    value={editDescription}
+                                    onChange={(e) => setEditDescription(e.target.value)}
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white/20 border border-transparent focus:bg-white dark:focus:bg-black transition-all font-medium resize-none text-slate-900 dark:text-slate-100"
+                                    rows="4"
+                                    placeholder="What's happening?"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">Tag <span className="text-gray-400 font-normal">(Optional)</span></label>
+                                <input
+                                    type="text"
+                                    value={editTag}
+                                    onChange={(e) => setEditTag(e.target.value)}
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white/20 border border-transparent focus:bg-white dark:focus:bg-black transition-all font-medium text-slate-900 dark:text-slate-100"
+                                    placeholder="#tag"
+                                />
+                            </div>
+
+                            <button
+                                onClick={handleEditSave}
+                                disabled={editLoading}
+                                className="w-full flex items-center justify-center gap-2 h-12 rounded-xl bg-gradient-to-r from-slate-900 to-slate-700 dark:from-zinc-100 dark:to-zinc-300 text-white dark:text-black font-bold text-base hover:opacity-90 disabled:opacity-50 transition-all shadow-lg shadow-slate-900/10"
+                            >
+                                {editLoading ? (
+                                    <>
+                                        <Loader2 className="animate-spin" size={18} />
+                                        Saving...
+                                    </>
+                                ) : (
+                                    'Save Changes'
+                                )}
+                            </button>
+
+                            {editMessage && (
+                                <div className={`text-sm font-medium text-center p-2.5 rounded-xl ${editMessage.toLowerCase().includes('success')
+                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                    }`}>
+                                    {editMessage}
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

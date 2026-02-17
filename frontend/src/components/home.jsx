@@ -162,6 +162,7 @@ function Home({ setlog, settheme, theme }) {
         setyou(false);
         setViewUser(null);
         setEditProfile(false);
+        setrefpost(prev => prev + 1);
     };
 
     const handleYourPostClick = () => {
@@ -254,11 +255,11 @@ function Home({ setlog, settheme, theme }) {
 
                         {/* Content Switcher */}
                         {editProfile ? (
-                            <Profile setrefpost={setrefpost} refpost={refpost} goHome={handleHomeClick} />
+                            <Profile setrefpost={setrefpost} refpost={refpost} goHome={handleHomeClick} setlog={setlog} />
                         ) : you_post ? (
-                            <YourPost you_post={you_post} setyou={setyou} setrefpost={setrefpost} />
+                            <YourPost you_post={you_post} setyou={setyou} sethome={handleHomeClick} refpost={refpost} />
                         ) : viewUser ? (
-                            <Username username={viewUser} sethome={() => setViewUser(null)} />
+                            <Username username={viewUser} sethome={handleHomeClick} refpost={refpost} />
                         ) : (
                             <>
                                 {/* Sticky Search Container */}

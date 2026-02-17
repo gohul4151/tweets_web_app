@@ -73,7 +73,7 @@ app.post("/signup", async function (req, res) {
     });
   }
   catch (e) {
-    console.log(e);
+    console.error(e);
     error = true;
     res.status(409).json({
       message: "user already exists"
@@ -239,9 +239,13 @@ app.delete("/deletepost/:id", auth, async (req, res) => {
     // Delete from database
     await postModel.findByIdAndDelete(postId);
 
+    // Remove post ID from user's post_ids array
     await userModel.findByIdAndUpdate(userId, {
       $pull: { post_ids: postId }
     });
+
+    // Delete all comments (and replies) associated with this post
+    await commentModel.deleteMany({ postId: postId });
 
     // Delete media from Cloudinary asynchronously (fire-and-forget)
     if (post.url) {
@@ -253,10 +257,42 @@ app.delete("/deletepost/:id", auth, async (req, res) => {
     res.json({ message: "Post deleted successfully" });
 
   } catch (err) {
+    console.error("Error deleting post:", err);
     res.status(500).json({ message: "Failed to delete post" });
   }
 });
 
+// Edit post - update title, description, tags
+app.put("/editpost/:id", auth, async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const userId = req.userId;
+
+    const post = await postModel.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    if (post.userId.toString() !== userId) {
+      return res.status(403).json({ message: "Not authorized to edit this post" });
+    }
+
+    const updateData = {};
+    if (req.body.title !== undefined) updateData.title = req.body.title;
+    if (req.body.description !== undefined) updateData.description = req.body.description;
+    if (req.body.tags !== undefined) updateData.tags = req.body.tags;
+
+    const updatedPost = await postModel.findByIdAndUpdate(postId, updateData, { new: true })
+      .populate("userId", "name profile_url");
+
+    res.json({ message: "Post updated successfully", post: updatedPost });
+
+  } catch (err) {
+    console.error("Error editing post:", err);
+    res.status(500).json({ message: "Failed to edit post" });
+  }
+});
 
 app.get("/profile", auth, async (req, res) => {
   const user = await userModel.findById(req.userId).select(
@@ -368,6 +404,103 @@ app.post("/removeprofilepicture", auth, async (req, res) => {
   } catch (err) {
     console.error("Error removing profile picture:", err);
     res.status(500).json({ message: "Failed to remove profile picture" });
+  }
+});
+
+// Delete Account - removes user, all their posts, comments, likes, and media
+app.post("/deleteaccount", auth, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { deleteFromCloudinaryAsync } = require('./cloudinaryUtils');
+    const defaultProfileUrl = "https://res.cloudinary.com/dbqdx1m4t/image/upload/v1771181818/profile_pics/nwirmfxg3fi59tqnxyyj.jpg";
+
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // 1. Get all posts by this user
+    const userPosts = await postModel.find({ userId: userId });
+
+    // 2. Delete media from Cloudinary for each post
+    for (const post of userPosts) {
+      if (post.url) {
+        const resourceType = post.type === 'video' ? 'video' : 'image';
+        deleteFromCloudinaryAsync(post.url, resourceType);
+      }
+    }
+
+    // 3. Delete all comments on the user's posts
+    const userPostIds = userPosts.map(p => p._id);
+    if (userPostIds.length > 0) {
+      await commentModel.deleteMany({ postId: { $in: userPostIds } });
+    }
+
+    // 4. Delete all comments made by this user on OTHER posts
+    //    First, find the parent comments to decrement commentCount on those posts
+    const userCommentsOnOtherPosts = await commentModel.find({
+      userId: userId,
+      postId: { $nin: userPostIds },  // not on their own posts (already handled)
+      parentCommentId: null           // only parent comments affect commentCount
+    });
+
+    // Decrement commentCount for each affected post
+    for (const comment of userCommentsOnOtherPosts) {
+      await postModel.findByIdAndUpdate(comment.postId, {
+        $inc: { commentCount: -1 }
+      });
+    }
+
+    // Delete all comments (including replies) by this user on other posts
+    await commentModel.deleteMany({
+      userId: userId,
+      postId: { $nin: userPostIds }
+    });
+
+    // 5. Remove user's likes/dislikes from all posts
+    await postModel.updateMany(
+      { likes: userId },
+      { $pull: { likes: userId } }
+    );
+    await postModel.updateMany(
+      { dislikes: userId },
+      { $pull: { dislikes: userId } }
+    );
+
+    // 6. Remove user's likes/dislikes from all comments
+    await commentModel.updateMany(
+      { likes: userId },
+      { $pull: { likes: userId } }
+    );
+    await commentModel.updateMany(
+      { dislikes: userId },
+      { $pull: { dislikes: userId } }
+    );
+
+    // 7. Delete user's profile picture from Cloudinary (if not default)
+    if (user.profile_url && user.profile_url !== defaultProfileUrl) {
+      deleteFromCloudinaryAsync(user.profile_url, 'image');
+    }
+
+    // 8. Delete all user's posts from database
+    await postModel.deleteMany({ userId: userId });
+
+    // 9. Delete the user document
+    await userModel.findByIdAndDelete(userId);
+
+    // 10. Clear auth cookie
+    const isProduction = (process.env.CORS_ORIGINS || "").includes("https");
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax"
+    });
+
+    res.json({ message: "Account deleted successfully" });
+
+  } catch (err) {
+    console.error("Error deleting account:", err);
+    res.status(500).json({ message: "Failed to delete account" });
   }
 });
 

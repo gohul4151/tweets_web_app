@@ -10,7 +10,6 @@ function Delete({ c_id, onDelete }) {
 
             if (res.ok) {
                 const data = await res.json();
-                console.log(data);
                 if (onDelete) {
                     onDelete(c_id);
                 }

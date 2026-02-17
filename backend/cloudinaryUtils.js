@@ -35,13 +35,12 @@ function deleteFromCloudinaryAsync(cloudinaryUrl, resourceType = 'image') {
     const publicId = extractPublicId(cloudinaryUrl);
 
     if (!publicId) {
-        console.log("No valid public_id found for deletion:", cloudinaryUrl);
         return;
     }
 
     cloudinary.uploader.destroy(publicId, { resource_type: resourceType })
         .then((result) => {
-            console.log(`Cloudinary deletion success for ${publicId}:`, result);
+            // deletion successful
         })
         .catch((err) => {
             console.error(`Cloudinary deletion failed for ${publicId}:`, err);

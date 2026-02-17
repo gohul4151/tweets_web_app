@@ -2,7 +2,7 @@ import { useRef, useEffect, useState, useCallback } from "react";
 import Addpost from "./post";
 import { ArrowLeft, User } from "lucide-react";
 
-function YourPost({ you_post, setyou, setrefpost }) {
+function YourPost({ you_post, setyou, sethome, refpost }) {
     const [pos, setpos] = useState([]);
     const [totalPosts, setTotalPosts] = useState(0);
     const [page, setPage] = useState(1);
@@ -79,10 +79,15 @@ function YourPost({ you_post, setyou, setrefpost }) {
     }, []);
 
     useEffect(() => {
-        if (initialLoad) {
+        // Reset and re-fetch if in YourPost view when refpost changes (new post created)
+        if (you_post) {
+            setpos([]);
+            setPage(1);
+            setHasMore(true);
+            setInitialLoad(true);
             getPosts(1);
         }
-    }, [initialLoad, getPosts]);
+    }, [refpost, you_post, getPosts]);
 
     useEffect(() => {
         if (page > 1 && !initialLoad) {
@@ -96,8 +101,7 @@ function YourPost({ you_post, setyou, setrefpost }) {
     };
 
     const handleBackClick = () => {
-        setrefpost(c => c + 1);
-        setyou(false);
+        sethome();
     };
 
     return (

@@ -36,7 +36,7 @@ function MainApp() {
           setIsAuthenticated(true);
         }
       } catch (e) {
-        console.log("Not logged in");
+        // Not logged in
       } finally {
         setLoading(false);
       }

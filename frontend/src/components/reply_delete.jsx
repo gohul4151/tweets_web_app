@@ -10,7 +10,6 @@ function Reply_delete({ c_id, parentCommentId, onDelete }) {
 
             if (res.ok) {
                 const data = await res.json();
-                console.log(data);
                 if (onDelete) {
                     onDelete(c_id, parentCommentId);
                 }

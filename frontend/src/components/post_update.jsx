@@ -6,8 +6,12 @@ function Addpostupdate({ des, ti, tag, file, setclose, addpost }) {
     const [message, setMessage] = useState("");
 
     async function putpost() {
-        if (!file) {
-            setMessage("Please select a file first");
+        const title = ti?.current?.value || "";
+        const description = des?.current?.value || "";
+        const tagValue = tag?.current?.value || "";
+
+        if (!title.trim() && !description.trim() && !file) {
+            setMessage("Post must have a title, description, or an attachment");
             return;
         }
 
@@ -15,20 +19,15 @@ function Addpostupdate({ des, ti, tag, file, setclose, addpost }) {
         setMessage("");
 
         try {
-            // Get values from refs
-            const title = ti?.current?.value || "";
-            const description = des?.current?.value || "";
-            const tagValue = tag?.current?.value || "";
-
             const formData = new FormData();
-            formData.append("file", file);
+            if (file) formData.append("file", file);
             formData.append("title", title);
             formData.append("description", description);
             formData.append("tag", tagValue);
 
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/putpost`, {
                 method: "POST",
-                body: formData,  // Send FormData directly
+                body: formData,
                 credentials: "include"
             });
 
@@ -88,8 +87,8 @@ function Addpostupdate({ des, ti, tag, file, setclose, addpost }) {
 
             {message && !lod && (
                 <div className={`mt-3 text-sm font-medium text-center p-2 rounded-lg ${message.toLowerCase().includes('success')
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                        : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                     }`}>
                     {message}
                 </div>

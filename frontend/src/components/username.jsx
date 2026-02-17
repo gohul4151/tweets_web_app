@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Addpost from "./post";
 import { ArrowLeft, User } from 'lucide-react';
 
-function Username({ username, sethome }) {
+function Username({ username, sethome, refpost }) {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
@@ -67,14 +67,14 @@ function Username({ username, sethome }) {
     }, [username]);
 
     useEffect(() => {
-        // Reset state when username changes
+        // Reset state when username or refpost changes
         setPosts([]);
         setTotalPosts(0);
         setPage(1);
         setHasMore(true);
         setInitialLoad(true);
         getPosts(1);
-    }, [username]);
+    }, [username, refpost]);
 
     // Fetch next page
     useEffect(() => {
