@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import useDebounce from './useDebounce';
 import Username from './username';
+import darkLogo from '../logo/dark.jpg';
+import lightLogo from '../logo/light.jpeg';
 
 function Home({ setlog, settheme, theme }) {
     const [home, sethome] = useState(true);
@@ -204,8 +206,10 @@ function Home({ setlog, settheme, theme }) {
                     <div className="hidden md:block md:col-span-3 xl:col-span-3 sticky top-0 h-screen overflow-y-auto py-6 border-r border-slate-200/60 dark:border-slate-800/50 no-scrollbar">
                         <div className="flex flex-col gap-2 h-full justify-between pb-4">
                             <div>
-                                <div className="px-6 mb-8 w-fit cursor-pointer group" onClick={handleHomeClick}>
-                                    <h1 className="text-2xl font-black tracking-tighter bg-gradient-to-br from-slate-900 via-slate-600 to-slate-400 dark:from-white dark:via-zinc-400 dark:to-zinc-600 bg-clip-text text-transparent group-hover:opacity-80 transition-opacity">TweetsApp</h1>
+                                <div className="px-6 mb-8 w-fit cursor-pointer group flex items-center gap-3" onClick={handleHomeClick}>
+                                    <img src={lightLogo} alt="FeedStack" className="w-11 h-11 rounded-xl object-cover dark:hidden" />
+                                    <img src={darkLogo} alt="FeedStack" className="w-11 h-11 rounded-xl object-cover hidden dark:block" />
+                                    <h1 className="text-2xl font-black tracking-tighter bg-gradient-to-br from-slate-900 via-slate-600 to-slate-400 dark:from-white dark:via-zinc-400 dark:to-zinc-600 bg-clip-text text-transparent group-hover:opacity-80 transition-opacity">FeedStack</h1>
                                 </div>
 
                                 <nav className="space-y-3 px-4">
@@ -239,7 +243,11 @@ function Home({ setlog, settheme, theme }) {
                     <div className="col-span-1 md:col-span-6 lg:col-span-6 xl:col-span-6 md:pl-8 border-r border-slate-200/60 dark:border-slate-800/50 min-h-screen relative bg-slate-50/30 dark:bg-transparent">
                         {/* Mobile Header */}
                         <div className="md:hidden sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 p-4 flex justify-between items-center transition-all">
-                            <h1 className="text-xl font-bold tracking-tighter bg-gradient-to-br from-slate-900 to-slate-500 dark:from-white dark:to-zinc-400 bg-clip-text text-transparent" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>TweetsApp</h1>
+                            <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                                <img src={lightLogo} alt="FeedStack" className="w-9 h-9 rounded-lg object-cover dark:hidden" />
+                                <img src={darkLogo} alt="FeedStack" className="w-9 h-9 rounded-lg object-cover hidden dark:block" />
+                                <h1 className="text-xl font-bold tracking-tighter bg-gradient-to-br from-slate-900 to-slate-500 dark:from-white dark:to-zinc-400 bg-clip-text text-transparent">FeedStack</h1>
+                            </div>
                             <div className="flex items-center gap-3">
                                 {currentUser && (
                                     <div className="flex items-center gap-2 pr-2 border-r border-slate-200 dark:border-slate-800 max-w-[150px]" onClick={handleEditProfileClick}>
@@ -326,7 +334,7 @@ function Home({ setlog, settheme, theme }) {
                                             <div className="inline-block p-6 bg-slate-100 dark:bg-zinc-800/50 rounded-3xl mb-6 text-slate-600 dark:text-zinc-400">
                                                 <HomeIcon size={48} strokeWidth={1.5} />
                                             </div>
-                                            <h3 className="text-2xl font-black mb-3 tracking-tight text-slate-900 dark:text-slate-100">Welcome to TweetsApp</h3>
+                                            <h3 className="text-2xl font-black mb-3 tracking-tight text-slate-900 dark:text-slate-100">Welcome to FeedStack</h3>
                                             <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto font-medium">
                                                 Your world is quiet right now. Follow some friends or start sharing your own moments!
                                             </p>

@@ -301,7 +301,7 @@ function Profile({ setrefpost, refpost, goHome, setlog }) {
                     <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="mb-8">
                             <h3 className="text-2xl font-black">Change Username</h3>
-                            <p className="text-gray-500">How you appear to others on TweetsApp</p>
+                            <p className="text-gray-500">How you appear to others on FeedStack</p>
                         </div>
 
                         <div className="space-y-6 mb-10 max-w-md">
@@ -470,7 +470,7 @@ function Profile({ setrefpost, refpost, goHome, setlog }) {
                                 {userData?.name || "Loading..."}
                             </h2>
                             <p className="text-blue-500 font-bold px-4 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-full text-sm">
-                                @{userData?.name?.toLowerCase().replace(/\s/g, '') || "tweetsapp_user"}
+                                @{userData?.name?.toLowerCase().replace(/\s/g, '') || "feedstack_user"}
                             </p>
                         </div>
 
