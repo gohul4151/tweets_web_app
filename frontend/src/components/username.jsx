@@ -10,6 +10,7 @@ function Username({ username, sethome, refpost }) {
     const [initialLoad, setInitialLoad] = useState(true);
 
     const [totalPosts, setTotalPosts] = useState(0);
+    const [userProfile, setUserProfile] = useState(null);
 
     const observer = useRef();
     const lastPostRef = useCallback(node => {
@@ -43,6 +44,9 @@ function Username({ username, sethome, refpost }) {
                     if (data.totalPosts !== undefined) {
                         setTotalPosts(data.totalPosts);
                     }
+                    if (data.user) {
+                        setUserProfile(data.user);
+                    }
                 } else if (Array.isArray(data)) {
                     postsArray = data;
                 } else if (Array.isArray(data.data)) {
@@ -70,6 +74,7 @@ function Username({ username, sethome, refpost }) {
         // Reset state when username or refpost changes
         setPosts([]);
         setTotalPosts(0);
+        setUserProfile(null);
         setPage(1);
         setHasMore(true);
         setInitialLoad(true);
@@ -83,8 +88,7 @@ function Username({ username, sethome, refpost }) {
         }
     }, [page]);
 
-    // Extract user profile from the first post if available
-    const userProfile = posts.length > 0 && posts[0].userId ? posts[0].userId : null;
+
 
     return (
         <div className="min-h-screen">

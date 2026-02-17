@@ -36,7 +36,11 @@ router.get("/", auth, async (req, res) => {
 
     res.json({
       posts: modifiedPosts,
-      totalPosts: user.post_ids.length
+      totalPosts: user.post_ids.length,
+      user: {
+        name: user.name,
+        profile_url: user.profile_url
+      }
     });
 
   } catch (err) {
