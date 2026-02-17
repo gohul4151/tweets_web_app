@@ -19,53 +19,51 @@ const upload = multer({
 // Upload API
 router.post("/", auth, upload.single("file"), async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
+    let uploadResult = null;
+    let fileType = "text";
+
+    // Only upload to Cloudinary if a file is attached
+    if (req.file) {
+      fileType = req.file.mimetype.startsWith("video") ? "video" : "image";
+
+      uploadResult = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          {
+            resource_type: fileType,
+            folder: fileType === "image" ? "images" : "video",
+            transformation:
+              fileType === "image"
+                ? [
+                  { width: 500, crop: "scale" },
+                  { quality: "auto:best" },
+                  { fetch_format: "auto" }
+                ]
+                : undefined
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        ).end(req.file.buffer);
+      });
     }
 
-    const fileType = req.file.mimetype.startsWith("video")
-      ? "video"
-      : "image";
+    const { title, description, tag } = req.body;
 
-    const uploadResult = await new Promise((resolve, reject) => {
-      cloudinary.uploader.upload_stream(
-        {
-          resource_type: fileType,
-          folder: fileType === "image" ? "images" : "video",
-
-          // TRANSFORMATIONS (ONLY FOR IMAGES)
-          transformation:
-            fileType === "image"
-              ? [
-                { width: 500, crop: "scale" },
-                { quality: "auto:best" },
-                { fetch_format: "auto" }
-              ]
-              : undefined
-        },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        }
-      ).end(req.file.buffer);
-    });
-
+    // Must have at least some content
+    if (!req.file && !title?.trim() && !description?.trim()) {
+      return res.status(400).json({ message: "Post must have a title, description, or an attachment" });
+    }
 
     try {
-      const { title, description, tag } = req.body;
-
-      //const token = req.cookies.token;
-      //const decoded = jwt.verify(token,JWT_SECRET);
-      //const userId=decoded.id;
-
       const post = await postModel.create({
         userId: req.userId,
-        url: uploadResult.secure_url,
-        type: uploadResult.resource_type,
-        time: uploadResult.created_at,
-        title: title,
-        description: description,
-        tags: tag
+        url: uploadResult ? uploadResult.secure_url : null,
+        type: uploadResult ? uploadResult.resource_type : "text",
+        time: uploadResult ? uploadResult.created_at : new Date().toISOString(),
+        title: title || "",
+        description: description || "",
+        tags: tag || ""
       });
 
       await userModel.findByIdAndUpdate(req.userId, {
@@ -73,24 +71,14 @@ router.post("/", auth, upload.single("file"), async (req, res) => {
           post_ids: { $each: [post._id], $position: 0 }
         }
       });
-
-
-      //const user = await userModel.findOne({
-      // _id:req.userId
-      //});
-      //user.post_ids.unshift(post._id);
-      //await user.save();
-    }
-    catch (e) {
+    } catch (e) {
       console.error(e);
-      res.status(500).json({
-        message: "Error in saving post to DB"
-      });
+      res.status(500).json({ message: "Error in saving post to DB" });
       return;
     }
 
     res.json({
-      url: uploadResult.secure_url,
+      url: uploadResult ? uploadResult.secure_url : null,
       type: fileType,
       message: "File uploaded successfully"
     });
