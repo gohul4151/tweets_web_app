@@ -202,6 +202,24 @@ app.post("/post/:id/dislikeoff", auth, async (req, res) => {
   res.json({ message: "Dislike removed" });
 });
 
+// Get list of users who liked a post
+app.get("/post/:id/likedby", auth, async (req, res) => {
+  try {
+    const post = await postModel.findById(req.params.id)
+      .populate("likes", "name profile_url")
+      .select("likes");
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    res.json({ users: post.likes });
+  } catch (err) {
+    console.error("Error fetching liked by users:", err);
+    res.status(500).json({ message: "Failed to fetch liked by users" });
+  }
+});
+
 /* await fetch(`/post/${post._id}/likeon`, {
       method: "POST",
       credentials: "include"

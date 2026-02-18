@@ -38,6 +38,9 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
     const [editTag, setEditTag] = useState(p1.tags || '');
     const [editLoading, setEditLoading] = useState(false);
     const [editMessage, setEditMessage] = useState('');
+    const [showLikedBy, setShowLikedBy] = useState(false);
+    const [likedByUsers, setLikedByUsers] = useState([]);
+    const [likedByLoading, setLikedByLoading] = useState(false);
 
     // Track reply pages and loading states for each comment
     const [replyPages, setReplyPages] = useState({});
@@ -204,6 +207,23 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
             method: 'POST',
             credentials: 'include'
         });
+    }
+
+    async function fetchLikedByUsers() {
+        setLikedByLoading(true);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/post/${p1._id}/likedby`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+            const data = await response.json();
+            setLikedByUsers(data.users || []);
+        } catch (error) {
+            console.error('Error fetching liked by users:', error);
+            setLikedByUsers([]);
+        } finally {
+            setLikedByLoading(false);
+        }
     }
 
     async function getcommand() {
@@ -558,7 +578,15 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
                             >
                                 <ArrowBigUp size={24} fill={isliked ? "currentColor" : "none"} />
                             </button>
-                            <span className="font-medium text-sm">{like}</span>
+                            <span
+                                className="font-medium text-sm cursor-pointer hover:underline"
+                                onClick={() => {
+                                    if (like > 0) {
+                                        fetchLikedByUsers();
+                                        setShowLikedBy(true);
+                                    }
+                                }}
+                            >{like}</span>
                         </div>
 
                         <div className="flex items-center gap-1">
@@ -845,6 +873,59 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
                                     }`}>
                                     {editMessage}
                                 </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Liked By Modal */}
+            {showLikedBy && (
+                <div
+                    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+                    onClick={() => setShowLikedBy(false)}
+                >
+                    <div
+                        className="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden transform transition-all animate-in zoom-in-95 duration-200"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="flex justify-between items-center p-4 border-b border-gray-100 dark:border-gray-800">
+                            <h3 className="text-lg font-bold text-black dark:text-white">Liked by</h3>
+                            <button
+                                onClick={() => setShowLikedBy(false)}
+                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-500 hover:text-black dark:hover:text-white"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="max-h-80 overflow-y-auto">
+                            {likedByLoading ? (
+                                <div className="p-8 flex justify-center">
+                                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-200 border-t-blue-500"></div>
+                                </div>
+                            ) : likedByUsers.length > 0 ? (
+                                <div className="py-2">
+                                    {likedByUsers.map((user, i) => (
+                                        <div
+                                            key={user._id || i}
+                                            onClick={() => {
+                                                setShowLikedBy(false);
+                                                if (onUserClick) onUserClick(user.name);
+                                            }}
+                                            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors"
+                                        >
+                                            <img
+                                                src={user.profile_url || "https://res.cloudinary.com/dbqdx1m4t/image/upload/v1771181818/profile_pics/nwirmfxg3fi59tqnxyyj.jpg"}
+                                                alt={user.name}
+                                                className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+                                            />
+                                            <span className="font-bold text-sm text-gray-900 dark:text-gray-100">{user.name}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="p-8 text-center text-gray-500 text-sm">No likes yet</div>
                             )}
                         </div>
                     </div>

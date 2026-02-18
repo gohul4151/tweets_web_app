@@ -47,7 +47,7 @@ function FileUpload({ des, ti, tag, setclose, addpost }) {
         <div className="space-y-4">
             <div className="flex flex-col gap-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Attachment 
+                    Attachment (Optional)
                 </label>
 
                 <div className="relative">

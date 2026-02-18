@@ -193,7 +193,7 @@ function Home({ setlog, settheme, theme }) {
         >
             {active && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-slate-900 dark:bg-zinc-100 rounded-r-full" />}
             <Icon size={24} className={`transition-transform duration-300 group-hover:scale-110 ${active ? 'stroke-[2.5px]' : 'stroke-2'}`} />
-            <span className={`hidden xl:block text-lg ${active ? 'font-bold' : 'font-medium'}`}>{label}</span>
+            <span className={`hidden md:block text-lg ${active ? 'font-bold' : 'font-medium'}`}>{label}</span>
         </button>
     );
 
@@ -220,13 +220,13 @@ function Home({ setlog, settheme, theme }) {
 
                                     <button
                                         onClick={() => setShowCreateModal(true)}
-                                        className="mt-10 w-full bg-gradient-to-r from-slate-900 to-slate-700 dark:from-zinc-100 dark:to-zinc-300 text-white dark:text-black font-bold text-lg py-3.5 rounded-2xl shadow-xl shadow-slate-900/10 hover:shadow-slate-900/20 hover:-translate-y-0.5 active:translate-y-0 transition-all hidden xl:block"
+                                        className="mt-10 w-full bg-gradient-to-r from-slate-900 to-slate-700 dark:from-zinc-100 dark:to-zinc-300 text-white dark:text-black font-bold text-lg py-3.5 rounded-2xl shadow-xl shadow-slate-900/10 hover:shadow-slate-900/20 hover:-translate-y-0.5 active:translate-y-0 transition-all hidden md:block"
                                     >
                                         Create Post
                                     </button>
                                     <button
                                         onClick={() => setShowCreateModal(true)}
-                                        className="mt-8 w-12 h-12 bg-slate-900 dark:bg-zinc-100 text-white dark:text-black rounded-2xl shadow-lg flex items-center justify-center hover:bg-slate-800 xl:hidden mx-auto transition-all"
+                                        className="mt-8 w-12 h-12 bg-slate-900 dark:bg-zinc-100 text-white dark:text-black rounded-2xl shadow-lg flex items-center justify-center hover:bg-slate-800 md:hidden mx-auto transition-all"
                                     >
                                         <PlusSquare size={24} />
                                     </button>
@@ -358,7 +358,7 @@ function Home({ setlog, settheme, theme }) {
                     </div>
 
                     {/* Right Sidebar - Wider for full name display */}
-                    <div className="hidden lg:block lg:col-span-3 pb-8 sticky top-0 h-screen py-6 px-4">
+                    <div className="hidden md:block md:col-span-3 pb-8 sticky top-0 h-screen py-6 px-4">
                         {currentUser && (
                             <div
                                 onClick={handleEditProfileClick}
