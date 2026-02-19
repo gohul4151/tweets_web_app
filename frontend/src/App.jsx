@@ -38,6 +38,9 @@ function MainApp() {
       try {
         const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/mytotalpost`, {
           method: "GET",
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          },
           credentials: "include"
         });
         if (response.ok) {

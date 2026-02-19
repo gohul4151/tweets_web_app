@@ -3,7 +3,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 function auth(req, res, next) {
     //const token = req.header.token
-    const token = req.cookies.token;
+    const token = req.cookies.token || (req.headers.authorization && req.headers.authorization.split(" ")[1]);
 
 
     if (!token) {

@@ -30,6 +30,9 @@ function Home({ setlog, settheme, theme }) {
             try {
                 const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/mytotalpost`, {
                     method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+                    },
                     credentials: "include",
                 });
                 const data = await res.json();
@@ -59,6 +62,9 @@ function Home({ setlog, settheme, theme }) {
         try {
             const result = await fetch(`${import.meta.env.VITE_BACKEND_URL}/getpost?page=${page}`, {
                 method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
                 credentials: "include",
             });
             const data = await result.json();
@@ -131,6 +137,9 @@ function Home({ setlog, settheme, theme }) {
             try {
                 const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/search/users?q=${encodeURIComponent(debouncedQuery)}`, {
                     method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+                    },
                     credentials: "include"
                 });
                 const data = await res.json();
@@ -181,6 +190,13 @@ function Home({ setlog, settheme, theme }) {
         setViewUser(null);
     };
 
+    const handleFeedStackClick = () => {
+        setViewUser("FeedStack");
+        sethome(false);
+        setyou(false);
+        setEditProfile(false);
+    };
+
     const NavItem = ({ onClick, icon: Icon, label, active, danger }) => (
         <button
             onClick={onClick}
@@ -206,7 +222,7 @@ function Home({ setlog, settheme, theme }) {
                     <div className="hidden md:block md:col-span-3 xl:col-span-3 sticky top-0 h-screen overflow-y-auto py-6 border-r border-slate-200/60 dark:border-slate-800/50 no-scrollbar">
                         <div className="flex flex-col gap-2 h-full justify-between pb-4">
                             <div>
-                                <div className="px-6 mb-8 w-fit cursor-pointer group flex items-center gap-3" onClick={handleHomeClick}>
+                                <div className="px-6 mb-8 w-fit cursor-pointer group flex items-center gap-3" onClick={handleFeedStackClick}>
                                     <img src={lightLogo} alt="FeedStack" className="w-11 h-11 rounded-xl object-cover dark:hidden" />
                                     <img src={darkLogo} alt="FeedStack" className="w-11 h-11 rounded-xl object-cover hidden dark:block" />
                                     <h1 className="text-2xl font-black tracking-tighter bg-gradient-to-br from-slate-900 via-slate-600 to-slate-400 dark:from-white dark:via-zinc-400 dark:to-zinc-600 bg-clip-text text-transparent group-hover:opacity-80 transition-opacity">FeedStack</h1>
@@ -234,7 +250,7 @@ function Home({ setlog, settheme, theme }) {
                             </div>
 
                             <div className="px-4 mt-auto">
-                                <NavItem onClick={() => setlog(false)} icon={LogOut} label="Logout" danger />
+                                <NavItem onClick={() => { localStorage.removeItem("token"); setlog(false); }} icon={LogOut} label="Logout" danger />
                             </div>
                         </div>
                     </div>
@@ -243,7 +259,7 @@ function Home({ setlog, settheme, theme }) {
                     <div className="col-span-1 md:col-span-6 lg:col-span-6 xl:col-span-6 md:pl-8 border-r border-slate-200/60 dark:border-slate-800/50 min-h-screen relative bg-slate-50/30 dark:bg-transparent">
                         {/* Mobile Header */}
                         <div className="md:hidden sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 p-4 flex justify-between items-center transition-all">
-                            <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                            <div className="flex items-center gap-2 cursor-pointer" onClick={handleFeedStackClick}>
                                 <img src={lightLogo} alt="FeedStack" className="w-9 h-9 rounded-lg object-cover dark:hidden" />
                                 <img src={darkLogo} alt="FeedStack" className="w-9 h-9 rounded-lg object-cover hidden dark:block" />
                                 <h1 className="text-xl font-bold tracking-tighter bg-gradient-to-br from-slate-900 to-slate-500 dark:from-white dark:to-zinc-400 bg-clip-text text-transparent">FeedStack</h1>
@@ -398,7 +414,7 @@ function Home({ setlog, settheme, theme }) {
                 <button onClick={handleEditProfileClick} className="p-3 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800/50 flex flex-col items-center gap-1 w-full">
                     <User size={24} className={editProfile ? "stroke-[2.5px] text-black dark:text-white" : "text-gray-500"} />
                 </button>
-                <button onClick={() => setlog(false)} className="p-3 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800/50 flex flex-col items-center gap-1 w-full">
+                <button onClick={() => { localStorage.removeItem("token"); setlog(false); }} className="p-3 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800/50 flex flex-col items-center gap-1 w-full">
                     <LogOut size={24} className="text-gray-500" />
                 </button>
             </div>

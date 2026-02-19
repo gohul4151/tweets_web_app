@@ -31,6 +31,7 @@ function Login({ setlog }) {
             const data = await response.json();
 
             if (response.ok && data.message === "Login success") {
+                if (data.token) localStorage.setItem("token", data.token); // Store token for header auth
                 setlog(true);
             } else {
                 setError(data.message || "Login failed");

@@ -27,6 +27,9 @@ function Addpostupdate({ des, ti, tag, file, setclose, addpost }) {
 
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/putpost`, {
                 method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
                 body: formData,
                 credentials: "include"
             });

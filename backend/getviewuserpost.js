@@ -8,8 +8,8 @@ const router = express.Router({ mergeParams: true });
 
 router.get("/", auth, async (req, res) => {
   try {
-    const viewuser = req.params.name;
-    const user = await userModel.findOne({ name: viewuser });
+    const viewuser = req.params.name.trim();
+    const user = await userModel.findOne({ name: { $regex: new RegExp(`^\\s*${viewuser}\\s*$`, 'i') } });
     if (!user) {
       return res.status(404).json({ message: "User not found", posts: [] });
     }

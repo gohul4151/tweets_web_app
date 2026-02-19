@@ -3,6 +3,7 @@ import { ArrowBigUp, ArrowBigDown, MessageCircle, Send, MoreVertical, X, Trash2,
 import Delete from './delete';
 import Reply_delete from './reply_delete';
 import Share from './share';
+import Linkify from 'linkify-react';
 
 function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
     const profile = useRef(null);
@@ -67,6 +68,9 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
             try {
                 const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/mytotalpost`, {
                     method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+                    },
                     credentials: "include",
                 });
                 const data = await res.json();
@@ -101,6 +105,9 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/deletepost/${p1._id}`, {
                 method: 'DELETE',
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
                 credentials: 'include'
             });
             const result = await response.json();
@@ -132,7 +139,10 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/editpost/${p1._id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
                 credentials: 'include',
                 body: JSON.stringify({
                     title: editTitle,
@@ -184,6 +194,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
     async function sentlikeon() {
         await fetch(`${import.meta.env.VITE_BACKEND_URL}/post/${p1._id}/likeon`, {
             method: 'POST',
+            headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
             credentials: 'include'
         });
     }
@@ -191,6 +202,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
     async function sentlikeoff() {
         await fetch(`${import.meta.env.VITE_BACKEND_URL}/post/${p1._id}/likeoff`, {
             method: 'POST',
+            headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
             credentials: 'include'
         });
     }
@@ -198,6 +210,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
     async function sentdislikeon() {
         await fetch(`${import.meta.env.VITE_BACKEND_URL}/post/${p1._id}/dislikeon`, {
             method: 'POST',
+            headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
             credentials: 'include'
         });
     }
@@ -205,6 +218,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
     async function sentdislikeoff() {
         await fetch(`${import.meta.env.VITE_BACKEND_URL}/post/${p1._id}/dislikeoff`, {
             method: 'POST',
+            headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
             credentials: 'include'
         });
     }
@@ -214,6 +228,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/post/${p1._id}/likedby`, {
                 method: 'GET',
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
                 credentials: 'include'
             });
             const data = await response.json();
@@ -233,6 +248,7 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/post/${p1._id}/comment?page=${c_page}`, {
                 method: 'GET',
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
                 credentials: 'include'
             });
             const data = await response.json();
@@ -280,7 +296,10 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/post/${p1._id}/comment`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
                 credentials: 'include',
                 body: JSON.stringify({ text: tempComment.text, parentCommentId: null }),
             });
@@ -338,7 +357,10 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
         try {
             await fetch(`${import.meta.env.VITE_BACKEND_URL}/post/${p1._id}/comment`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
                 credentials: 'include',
                 body: JSON.stringify({ text: replyContent, parentCommentId: parentCommentId }),
             });
@@ -380,7 +402,10 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
         try {
             await fetch(`${import.meta.env.VITE_BACKEND_URL}/comment/${commentId}/like`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
                 credentials: 'include',
             });
         } catch (error) {
@@ -413,7 +438,10 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
         try {
             await fetch(`${import.meta.env.VITE_BACKEND_URL}/comment/${commentId}/dislike`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
                 credentials: 'include',
             });
         } catch (error) {
@@ -427,7 +455,10 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/comment/${commentId}/replies?page=${page}&limit=10`, {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
                 credentials: 'include',
             });
 
@@ -531,9 +562,15 @@ function Addpost({ p1, del, onDelete, onUserClick, canInteract = true }) {
 
                 {description && (
                     <div className="text-slate-700 dark:text-slate-300 mb-3 whitespace-pre-wrap text-base leading-relaxed font-normal">
-                        {read || !isLongDescription
-                            ? description : `${description.substring(0, maxread)}...`
-                        }
+                        <Linkify options={{
+                            target: '_blank',
+                            rel: 'noopener noreferrer',
+                            className: 'text-blue-500 hover:text-blue-400 hover:underline break-all'
+                        }}>
+                            {read || !isLongDescription
+                                ? description : `${description.substring(0, maxread)}...`
+                            }
+                        </Linkify>
                         {isLongDescription && (
                             <button
                                 className="text-blue-500 hover:text-blue-400 ml-1 font-medium text-sm"

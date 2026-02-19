@@ -31,6 +31,9 @@ function Username({ username, sethome, refpost }) {
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/getuserpost/${username}?page=${pageNum}&limit=10`, {
                 method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
                 credentials: "include"
             });
 
