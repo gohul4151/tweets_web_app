@@ -5,6 +5,9 @@ function Reply_delete({ c_id, parentCommentId, onDelete }) {
         try {
             const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/comment/${c_id}`, {
                 method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
                 credentials: "include"
             });
 

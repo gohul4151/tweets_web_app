@@ -19,6 +19,9 @@ function Profile({ setrefpost, refpost, goHome, setlog }) {
             try {
                 const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/mytotalpost`, {
                     method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+                    },
                     credentials: "include",
                 });
                 const data = await res.json();
@@ -55,6 +58,9 @@ function Profile({ setrefpost, refpost, goHome, setlog }) {
             try {
                 const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/removeprofilepicture`, {
                     method: 'POST',
+                    headers: {
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+                    },
                     credentials: "include"
                 });
                 const data = await response.json();
@@ -91,6 +97,9 @@ function Profile({ setrefpost, refpost, goHome, setlog }) {
 
                 const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/updateprofilepicture`, {
                     method: 'PUT',
+                    headers: {
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+                    },
                     credentials: "include",
                     body: formData
                 });
@@ -125,7 +134,10 @@ function Profile({ setrefpost, refpost, goHome, setlog }) {
             try {
                 const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/changeusername`, {
                     method: "PUT",
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+                    },
                     credentials: "include",
                     body: JSON.stringify({ name: newUsername })
                 });
@@ -153,7 +165,10 @@ function Profile({ setrefpost, refpost, goHome, setlog }) {
             try {
                 const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/changepassword`, {
                     method: "PUT",
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+                    },
                     credentials: "include",
                     body: JSON.stringify({ currentPassword, newPassword })
                 });
@@ -181,6 +196,9 @@ function Profile({ setrefpost, refpost, goHome, setlog }) {
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/deleteaccount`, {
                 method: 'POST',
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
                 credentials: 'include'
             });
             const data = await response.json();

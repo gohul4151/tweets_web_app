@@ -5,6 +5,9 @@ function Delete({ c_id, onDelete }) {
         try {
             const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/comment/${c_id}`, {
                 method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
                 credentials: "include"
             });
 

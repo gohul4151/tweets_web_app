@@ -34,6 +34,9 @@ function YourPost({ you_post, setyou, sethome, refpost }) {
             if (pageNum === 1) {
                 const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/mytotalpost`, {
                     method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+                    },
                     credentials: "include",
                 });
                 const a = await res.json();
@@ -45,6 +48,9 @@ function YourPost({ you_post, setyou, sethome, refpost }) {
             // Fetch posts for current page
             const result = await fetch(`${import.meta.env.VITE_BACKEND_URL}/getmypost?page=${pageNum}&limit=10`, {
                 method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
                 credentials: "include",
             });
 
